@@ -9,8 +9,8 @@ Użytkownicy mają trudności z ręcznym tworzeniem wysokiej jakości fiszek edu
 ## 3. Wymagania funkcjonalne
 1. Generowanie fiszek przez AI:
    - Użytkownik wprowadza tekst (kopiuj-wklej) i uruchamia proces generowania.
-   - System generuje fiszki dwustronne, z pierwszą stroną o maksymalnie 200 znakach oraz drugą stroną o maksymalnie 500 znakach.
-   - Po wygenerowaniu fiszki, w trybie AI wyświetlany jest interfejs recenzji z trzema przyciskami (Akceptuj, Edytuj, Odrzuć).
+   - System generuje fiszki dwustronne, z pierwszą stroną o maksymalnie 200 znakach oraz drugą stroną o maksymalnie 500 znakach. Ilość generowanych fiszek po kliknięciu jest uzależniona od długości tekstu wprowadzonego przez użytkownika, system generuje fiszki w ilości od 5 do 15.
+   - Po wygenerowaniu fiszek, w trybie AI wyświetlany jest interfejs recenzji z trzema przyciskami (Akceptuj, Edytuj, Odrzuć).
    - Operacja edycji nadpisuje istniejącą treść fiszki.
 2. Ręczne tworzenie fiszek:
    - Umożliwienie tworzenia fiszek za pomocą formularza, w którym użytkownik wprowadza treści obu stron.
