@@ -1,0 +1,11 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { GenerateFlashcardsView } from "../components/views/GenerateFlashcardsView";
+---
+
+<Layout title="Generowanie Fiszek">
+  <main class="container mx-auto p-4">
+    <h1 class="text-3xl font-bold mb-6">Generowanie Fiszek</h1>
+    <GenerateFlashcardsView client:load />
+  </main>
+</Layout>

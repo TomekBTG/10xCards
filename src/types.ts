@@ -17,8 +17,17 @@ export interface PaginationDTO {
 export type FlashcardDTO = Database["public"]["Tables"]["flashcards"]["Row"];
 
 // Flashcard Generation Log DTO representing a generation log record
-// Directly using the database row type for flashcard_generation_logs
-export type FlashcardGenerationLogDTO = Database["public"]["Tables"]["flashcard_generation_logs"]["Row"];
+// Including base fields from database plus additional fields needed by the UI
+export interface FlashcardGenerationLogDTO {
+  id: string;
+  user_id: string;
+  user_input: string;
+  number_generated: number;
+  generation_duration: number;
+  generated_at: string;
+  created_at: string;
+  model_used: string;
+}
 
 // Command Model for creating a single flashcard
 // We pick only the fields required by the API payload: front, back, and is_ai_generated

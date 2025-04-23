@@ -1,27 +1,45 @@
 ---
+import "../styles/global.css";
+import { Toaster } from "../components/ui/sonner";
+
 interface Props {
   title: string;
 }
 
-import "../tailwind.css";
 const { title } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="pl">
   <head>
     <meta charset="UTF-8" />
-    <meta name="description" content="10xCards - Boost Your Productivity" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="generator" content={Astro.generator} />
-    <title>{title}</title>
+    <title>{title} | 10xCards</title>
   </head>
-  <body>
-    <slot />
+  <body class="min-h-screen bg-gray-50">
+    <header class="bg-white shadow-sm py-4">
+      <div class="container mx-auto px-4">
+        <nav class="flex justify-between items-center">
+          <a href="/" class="text-xl font-bold">10xCards</a>
+          <ul class="flex gap-4">
+            <li><a href="/" class="hover:text-blue-600">Strona główna</a></li>
+            <li><a href="/generate" class="hover:text-blue-600">Generuj fiszki</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <div class="py-8">
+      <slot />
+    </div>
+
+    <footer class="bg-white shadow-sm py-4 mt-auto">
+      <div class="container mx-auto px-4 text-center text-gray-500">
+        &copy; {new Date().getFullYear()} 10xCards - Wszystkie prawa zastrzeżone
+      </div>
+    </footer>
+
+    <Toaster position="top-right" closeButton richColors />
   </body>
 </html>
-
-<style is:global>
-  /* Tailwind CSS jest importowany na górze pliku */
-</style>
