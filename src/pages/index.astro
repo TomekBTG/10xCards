@@ -1,0 +1,49 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { Button } from "../components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
+---
+
+<Layout title="10xCards">
+  <main class="container mx-auto p-4">
+    <h1 class="text-4xl font-bold mb-6">10xCards</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Karta przykładowa</CardTitle>
+          <CardDescription>Opis karty przykładowej</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p>Treść karty z komponentami shadcn/ui</p>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button variant="outline">Anuluj</Button>
+          <Button>Zapisz</Button>
+        </CardFooter>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <div class="flex items-center gap-4">
+            <!-- <Avatar>
+              <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+              <AvatarFallback>SC</AvatarFallback>
+            </Avatar> -->
+            <div>
+              <CardTitle>Profil użytkownika</CardTitle>
+              <CardDescription>Informacje o użytkowniku</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p>Przykładowa karta profilu z avatarem</p>
+        </CardContent>
+        <CardFooter>
+          <Button variant="secondary" className="w-full">Zobacz profil</Button>
+        </CardFooter>
+      </Card>
+    </div>
+  </main>
+</Layout>

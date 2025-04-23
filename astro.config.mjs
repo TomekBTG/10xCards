@@ -13,6 +13,13 @@ export default defineConfig({
   server: { port: 3000 },
   vite: {
     plugins: [tailwindcss()],
+    css: {
+      preprocessorOptions: {
+        scss: {
+          additionalData: `@import "./src/styles/globals.css";`,
+        },
+      },
+    },
   },
   adapter: node({
     mode: "standalone",
