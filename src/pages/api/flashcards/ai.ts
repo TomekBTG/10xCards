@@ -8,6 +8,7 @@ import type {
 } from "../../../types";
 import { aiService } from "../../../lib/services/ai.service";
 import { supabaseClient } from "../../../db/supabase.client";
+import { ignoreAuth } from "../../../lib/auth";
 
 export const prerender = false;
 
@@ -25,6 +26,14 @@ const generateFlashcardsSchema = z.object({
 
 export async function POST({ request }: APIContext): Promise<Response> {
   try {
+    // Sprawdzenie autentykacji
+    const {
+      data: { user },
+    } = await supabaseClient.auth.getUser();
+    if (!user && !ignoreAuth) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+    }
+
     // 1. Pobierz i zwaliduj dane z żądania
     const body = await request.json();
 
@@ -41,43 +50,14 @@ export async function POST({ request }: APIContext): Promise<Response> {
 
     const { user_input } = validationResult.data as GenerateFlashcardsCommand;
 
-    // 3. Wygeneruj fiszki przy użyciu serwisu AI
+    // 2. Wygeneruj fiszki przy użyciu serwisu AI
     const generatedFlashcards = await aiService.generateFlashcards(user_input);
 
-    // 4. Przygotuj dane do zapisu w bazie danych
-    const flashcardsToInsert = generatedFlashcards.map((flashcard) => ({
-      user_id: DEFAULT_USER_ID,
-      front: flashcard.front || "",
-      back: flashcard.back || "",
-      status: flashcard.status || "pending",
-      is_ai_generated: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }));
-
-    console.log(flashcardsToInsert);
-
-    // 5. Zapisz fiszki w bazie danych
-    const { data: insertedFlashcards, error: flashcardsError } = await supabaseClient
-      .from("flashcards")
-      .insert(flashcardsToInsert)
-      .select("*");
-
-    if (flashcardsError) {
-      console.error("Błąd podczas zapisywania fiszek:", flashcardsError);
-      return new Response(JSON.stringify({ error: "Błąd serwera podczas zapisywania fiszek" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    // 6. Utwórz log generacji
+    // 3. Utwórz log generacji
     const generationLog = {
       user_id: DEFAULT_USER_ID,
       user_input: user_input,
-      number_generated: insertedFlashcards.length,
-      number_accepted: 0, // Na początku wszystkie mają status "pending"
-      number_rejected: 0,
+      number_generated: generatedFlashcards.length,
       generation_duration: 1, // Wartość przykładowa w sekundach
       generated_at: new Date().toISOString(),
     };
@@ -96,7 +76,33 @@ export async function POST({ request }: APIContext): Promise<Response> {
       });
     }
 
-    // 7. Przygotuj odpowiedź
+    // 4. Przygotuj dane do zapisu w bazie danych
+    const flashcardsToInsert = generatedFlashcards.map((flashcard) => ({
+      user_id: DEFAULT_USER_ID,
+      front: flashcard.front || "",
+      back: flashcard.back || "",
+      status: flashcard.status || "pending",
+      is_ai_generated: true,
+      flashcard_generation_logs_id: insertedLog.id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }));
+
+    // 5. Zapisz fiszki w bazie danych
+    const { data: insertedFlashcards, error: flashcardsError } = await supabaseClient
+      .from("flashcards")
+      .insert(flashcardsToInsert)
+      .select("*");
+
+    if (flashcardsError) {
+      console.error("Błąd podczas zapisywania fiszek:", flashcardsError);
+      return new Response(JSON.stringify({ error: "Błąd serwera podczas zapisywania fiszek" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // 6. Przygotuj odpowiedź
     const response: GenerateFlashcardsResponseDTO = {
       flashcards: insertedFlashcards as FlashcardDTO[],
       log: insertedLog as FlashcardGenerationLogDTO,

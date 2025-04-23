@@ -19,6 +19,7 @@
 - created_at: TIMESTAMPTZ NOT NULL DEFAULT now()
 - updated_at: TIMESTAMPTZ NOT NULL DEFAULT now()
 - user_id: UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE
+- flashcard_generation_logs_id: UUID REFERENCES flashcard_generation_logs(id) ON DELETE SET NULL
 
 ## Table: flashcard_generation_logs
 - id: UUID PRIMARY KEY NOT NULL DEFAULT uuid_generate_v4()
@@ -26,14 +27,13 @@
 - generation_duration: INTEGER NOT NULL
 - user_input: TEXT NOT NULL
 - number_generated: INTEGER NOT NULL
-- number_accepted: INTEGER NOT NULL
-- number_rejected: INTEGER NOT NULL
 - user_id: UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE
 
 # 2. Relationships
 
 - One-to-Many from users to flashcards: flashcards.user_id REFERENCES users(id)
 - One-to-Many from users to flashcard_generation_logs: flashcard_generation_logs.user_id REFERENCES users(id)
+- One-to-Many from flashcard_generation_logs to flashcards: flashcards.flashcard_generation_logs_id REFERENCES flashcard_generation_logs(id)
 
 # 3. Indexes
 

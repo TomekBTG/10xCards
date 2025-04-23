@@ -13,6 +13,18 @@ create extension if not exists "uuid-ossp";
 -- NOTE: The users table is automatically managed by Supabase Auth
 -- Reference it via auth.users
 
+-- Flashcard generation logs to track AI generation statistics
+create table if not exists public.flashcard_generation_logs (
+  id uuid primary key not null default uuid_generate_v4(),
+  generated_at timestamptz not null default now(),
+  generation_duration integer not null, -- in milliseconds
+  user_input text not null,
+  number_generated integer not null,
+  user_id uuid not null references auth.users(id) on delete cascade
+);
+
+comment on table public.flashcard_generation_logs is 'Tracks statistics about AI-generated flashcards';
+
 -- Flashcards table for storing user's flashcards
 create table if not exists public.flashcards (
   id uuid primary key not null default uuid_generate_v4(),
@@ -23,24 +35,11 @@ create table if not exists public.flashcards (
   is_public boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  user_id uuid not null references auth.users(id) on delete cascade
+  user_id uuid not null references auth.users(id) on delete cascade,
+  flashcard_generation_logs_id uuid references public.flashcard_generation_logs(id) on delete set null
 );
 
 comment on table public.flashcards is 'Stores flashcards created by users';
-
--- Flashcard generation logs to track AI generation statistics
-create table if not exists public.flashcard_generation_logs (
-  id uuid primary key not null default uuid_generate_v4(),
-  generated_at timestamptz not null default now(),
-  generation_duration integer not null, -- in milliseconds
-  user_input text not null,
-  number_generated integer not null,
-  number_accepted integer not null,
-  number_rejected integer not null,
-  user_id uuid not null references auth.users(id) on delete cascade
-);
-
-comment on table public.flashcard_generation_logs is 'Tracks statistics about AI-generated flashcards';
 
 --------------
 -- Indexes --
@@ -49,6 +48,7 @@ comment on table public.flashcard_generation_logs is 'Tracks statistics about AI
 create index if not exists idx_flashcards_user_id on public.flashcards(user_id);
 create index if not exists idx_flashcards_is_public on public.flashcards(is_public);
 create index if not exists idx_flashcards_status on public.flashcards(status);
+create index if not exists idx_flashcards_generation_logs_id on public.flashcards(flashcard_generation_logs_id);
 
 ------------------------------
 -- Row Level Security (RLS) --
