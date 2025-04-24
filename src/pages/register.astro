@@ -1,0 +1,16 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { AuthLayout } from "@/components/auth/AuthLayout";
+import { RegisterForm } from "@/components/auth/RegisterForm";
+---
+
+<Layout title="Rejestracja">
+  <AuthLayout
+    client:load
+    pageTitle="Zarejestruj nowe konto"
+    alternateLink="/login"
+    alternateLinkText="Masz już konto? Zaloguj się"
+  >
+    <RegisterForm client:load />
+  </AuthLayout>
+</Layout>
