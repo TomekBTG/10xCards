@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLogin, useToast } from "@/hooks/auth";
 import { EmailInput } from "./EmailInput";
 import { PasswordInput } from "./PasswordInput";
@@ -8,6 +8,13 @@ import { ToastNotification } from "./ToastNotification";
 export function LoginForm() {
   const { formState, updateField, handleSubmit } = useLogin();
   const { toast, closeToast } = useToast();
+  const [isClientSide, setIsClientSide] = useState(false);
+
+  useEffect(() => {
+    setIsClientSide(true);
+  }, []);
+
+  const isSubmitDisabled = !isClientSide || !formState.email || !formState.password;
 
   return (
     <>
@@ -61,11 +68,7 @@ export function LoginForm() {
           </div>
         </div>
 
-        <SubmitButton
-          text="Zaloguj się"
-          isLoading={formState.isLoading}
-          isDisabled={!formState.email || !formState.password}
-        />
+        <SubmitButton text="Zaloguj się" isLoading={formState.isLoading} isDisabled={isSubmitDisabled} />
       </form>
 
       {toast && <ToastNotification {...toast} onClose={closeToast} />}

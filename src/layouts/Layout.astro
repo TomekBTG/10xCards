@@ -1,45 +1,73 @@
 ---
 import "../styles/global.css";
 import { Toaster } from "../components/ui/sonner";
+import UserMenu from "../components/UserMenu";
+import { isAuthenticated, supabase } from "../db/supabase";
+import AuthStateProvider from "../components/AuthStateProvider";
 
 interface Props {
   title: string;
 }
 
 const { title } = Astro.props;
+
+// Pobierz informacje o sesji
+const { data } = await supabase.auth.getSession();
+// Wywołaj funkcję isAuthenticated
+const isLoggedIn = await isAuthenticated();
+
+// Dodajmy jeszcze sprawdzenie, czy user istnieje w sesji
+if (data.session?.user) {
+  console.log("Layout - Dane użytkownika:", {
+    id: data.session.user.id,
+    email: data.session.user.email,
+    role: data.session.user.role,
+  });
+}
 ---
 
 <!doctype html>
-<html lang="pl">
+<html lang="pl" class="h-full">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.png" />
     <title>{title} | 10xCards</title>
   </head>
-  <body class="min-h-screen bg-gray-50">
+  <body class="flex flex-col h-full bg-gray-50">
     <header class="bg-white shadow-sm py-4">
       <div class="container mx-auto px-4">
         <nav class="flex justify-between items-center">
           <a href="/" class="text-xl font-bold">10xCards</a>
-          <ul class="flex gap-4">
-            <li><a href="/" class="hover:text-blue-600">Strona główna</a></li>
+          <ul class="flex gap-4 items-center">
+            <li><a href="/dashboard" class="hover:text-blue-600">Dashboard</a></li>
             <li><a href="/generate" class="hover:text-blue-600">Generuj fiszki</a></li>
+            <li><a href="/flashcards/add" class="hover:text-blue-600">Dodaj fiszki</a></li>
+            <li><a href="/library" class="hover:text-blue-600">Biblioteka</a></li>
+            <li><a href="/quiz" class="hover:text-blue-600">Quiz</a></li>
+            <li data-auth-logged-in style={isLoggedIn ? "" : "display: none;"}>
+              <UserMenu client:load />
+            </li>
+            <li data-auth-logged-out style={isLoggedIn ? "display: none;" : ""}>
+              <a href="/login" class="hover:text-blue-600 font-bold"> Zaloguj się </a>
+            </li>
           </ul>
         </nav>
       </div>
     </header>
 
-    <div class="py-8">
+    <main class="flex-grow py-8">
       <slot />
-    </div>
+    </main>
 
-    <footer class="bg-white shadow-sm py-4 mt-auto">
+    <footer class="bg-white shadow-sm py-4">
       <div class="container mx-auto px-4 text-center text-gray-500">
         &copy; {new Date().getFullYear()} 10xCards - Wszystkie prawa zastrzeżone
       </div>
     </footer>
 
     <Toaster position="top-right" closeButton richColors />
+
+    <AuthStateProvider client:load initialServerState={isLoggedIn} />
   </body>
 </html>

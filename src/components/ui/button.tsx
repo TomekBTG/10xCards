@@ -37,6 +37,7 @@ function Button({
   variant,
   size,
   asChild = false,
+  disabled,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
@@ -44,7 +45,17 @@ function Button({
   }) {
   const Comp = asChild ? Slot : "button";
 
-  return <Comp data-slot="button" className={cn(buttonVariants({ variant, size, className }))} {...props} />;
+  // Zapewniamy, że disabled jest zawsze wartością boolowską
+  const isDisabled = disabled === true ? true : false;
+
+  return (
+    <Comp
+      data-slot="button"
+      className={cn(buttonVariants({ variant, size, className }))}
+      disabled={isDisabled}
+      {...props}
+    />
+  );
 }
 
 export { Button, buttonVariants };

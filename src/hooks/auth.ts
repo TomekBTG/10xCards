@@ -108,10 +108,32 @@ export function useLogin() {
         password: formState.password,
       };
 
-      const { error } = await supabase.auth.signInWithPassword(credentials);
+      const { data, error } = await supabase.auth.signInWithPassword(credentials);
 
       if (error) {
         throw new Error(error.message);
+      }
+
+      // Po pomyślnym logowaniu zapisz token w ciasteczku
+      if (data && data.session) {
+        try {
+          // Nazwa ciasteczka sesji Supabase
+          const AUTH_COOKIE_NAME = "sb-auth-token";
+
+          // Przygotuj dane sesji do zapisu w ciasteczku
+          const sessionData = {
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+            expires_at: data.session.expires_at,
+          };
+
+          // Zapisz token w ciasteczku - będzie widoczny dla serwera
+          document.cookie = `${AUTH_COOKIE_NAME}=${JSON.stringify(sessionData)}; path=/; samesite=lax; max-age=${60 * 60 * 24 * 7}`;
+
+          console.log("Token sesji zapisany w ciasteczku");
+        } catch (cookieError) {
+          console.error("Błąd podczas zapisywania tokena w ciasteczku:", cookieError);
+        }
       }
 
       showToast("success", "Zalogowano pomyślnie");

@@ -23,6 +23,13 @@ Użytkownicy mają trudności z ręcznym tworzeniem wysokiej jakości fiszek edu
 5. Raportowanie:
    - W trybie AI, system rejestruje operacje generowania fiszek w bazie danych.
    - Raport zawiera informacje o liczbie wygenerowanych i odrzuconych fiszek w ramach danej operacji (dane wewnętrzne).
+6. Sesja powtórkowa (Quiz):
+   - Ścieżka widoku: `/quiz`
+   - Główny cel: Przeprowadzenie sesji powtórkowych z wykorzystaniem fiszek.
+   - Prezentacja fiszek w formie quizu: system losowo wybiera fiszki, wyświetla pytanie (pierwszą stronę), umożliwia odsłonięcie odpowiedzi (drugą stroną), użytkownik zaznacza poprawne lub niepoprawne odpowiedzi.
+   - Statystyki sesji: liczba poprawnych i niepoprawnych odpowiedzi, czas trwania sesji, procent poprawnych odpowiedzi.
+   - Kluczowe komponenty: widżety quizu, przyciski nawigacyjne, timer.
+   - Uwagi: optymalizacja doświadczenia użytkownika, wsparcie dla różnych urządzeń.
 
 ## 4. Granice produktu
 1. Nie implementujemy własnego, zaawansowanego algorytmu powtórek (np. SuperMemo, Anki).
@@ -68,6 +75,36 @@ Użytkownicy mają trudności z ręcznym tworzeniem wysokiej jakości fiszek edu
   - Kryteria akceptacji:
     - Użytkownik może zmienić hasło za pomocą dedykowanego formularza.
     - Użytkownik może usunąć konto, a system potwierdza usunięcie konta i powiązanych danych.
+- US-007
+  - Tytuł: Sesja powtórkowa (Quiz)
+  - Opis: Jako użytkownik chcę przeprowadzić sesję powtórkową w formie quizu z wykorzystaniem wcześniej utworzonych fiszek, aby utrwalić wiedzę przez zadawanie pytań i udzielanie odpowiedzi.
+  - Kryteria akceptacji:
+    - Użytkownik może przejść do widoku `/quiz`.
+    - System losowo wybiera zestaw fiszek na sesję.
+    - Dla każdej fiszki system wyświetla pytanie (pierwszą stronę) i po żądaniu odsłania odpowiedź (drugą stroną).
+    - Użytkownik może oznaczyć odpowiedź jako poprawną lub niepoprawną.
+    - Po zakończeniu quizu wyświetlane są statystyki: liczba poprawnych i niepoprawnych odpowiedzi, procent poprawnych oraz czas trwania sesji.
+- US-008
+  - Tytuł: Ręczne dodawanie fiszek
+  - Opis: Jako użytkownik chcę mieć możliwość ręcznego dodawania fiszek poprzez dedykowany formularz, aby tworzyć własne fiszki bez korzystania z AI.
+  - Kryteria akceptacji:
+    - Użytkownik może przejść do widoku `/flashcards/add` lub `/create`.
+    - Interfejs zawiera formularz z polami do wprowadzenia pytania (pierwsza strona) i odpowiedzi (druga strona).
+    - Użytkownik może określić kategorię fiszki oraz stopień trudności.
+    - System waliduje wprowadzone dane zgodnie z limitami (pierwsza strona do 200 znaków, druga strona do 500 znaków).
+    - Użytkownik może dodać wiele fiszek w ramach jednej sesji.
+    - Po zapisaniu fiszki są dodawane do bazy danych i dostępne w bibliotece fiszek.
+- US-009
+  - Tytuł: Przeglądanie i zarządzanie biblioteką fiszek
+  - Opis: Jako użytkownik chcę mieć dostęp do biblioteki wszystkich moich fiszek, aby móc je przeglądać, edytować, filtrować i organizować.
+  - Kryteria akceptacji:
+    - Użytkownik może przejść do widoku `/library` lub `/flashcards/library`.
+    - System wyświetla listę wszystkich fiszek użytkownika z możliwością podglądu obu stron.
+    - Interfejs umożliwia filtrowanie fiszek według kategorii, statusu (zaakceptowane, odrzucone) i daty utworzenia.
+    - Użytkownik może edytować istniejące fiszki (treść obu stron, kategorię, stopień trudności).
+    - System umożliwia zmianę statusu fiszek (pojedynczo lub masowo).
+    - Użytkownik może usuwać fiszki z biblioteki.
+    - Interfejs pozwala na organizowanie fiszek w kategorie.
 
 ## 6. Metryki sukcesu
 1. 75% fiszek generowanych przez AI jest akceptowanych przez użytkowników.

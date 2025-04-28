@@ -1,14 +1,36 @@
 import { z } from "zod";
 import type { APIRoute } from "astro";
 import type { FlashcardDTO, FlashcardGenerationLogDTO } from "../../../../types";
-import { ignoreAuth } from "../../../../lib/auth";
+import { isAuthenticated } from "../../../../db/supabase";
+
+// Definicja interfejsu dla locals jeśli App.Locals nie jest rozpoznawany
+interface LocalsWithSupabase {
+  supabase: {
+    auth: {
+      getUser: () => Promise<{
+        data: {
+          user: { id: string } | null;
+        };
+      }>;
+      getSession: () => Promise<{
+        data: {
+          session: unknown;
+        };
+      }>;
+    };
+  };
+}
+
+// Tymczasowo ustawiam wartość ignoreAuth na false
+const ignoreAuth = false;
 
 export const GET: APIRoute = async ({ params, locals }) => {
-  // Check user authentication using Supabase's getUser()
-  const {
-    data: { user },
-  } = await locals.supabase.auth.getUser();
-  if (!user && !ignoreAuth) {
+  // Pobierz informacje o sesji
+  await (locals as LocalsWithSupabase).supabase.auth.getSession();
+  // Wywołaj funkcję isAuthenticated
+  const isLoggedIn = await isAuthenticated();
+
+  if (!isLoggedIn && !ignoreAuth) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }
 

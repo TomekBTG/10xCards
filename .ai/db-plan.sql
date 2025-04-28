@@ -16,6 +16,9 @@
 - back: VARCHAR(500) NOT NULL CHECK (char_length(back) <= 500)
 - status: VARCHAR NOT NULL CHECK (status IN ('accepted', 'rejected', 'pending'))
 - is_ai_generated: BOOLEAN NOT NULL
+- category_id: TEXT NOT NULL DEFAULT 'default_category'
+- category_name: TEXT NOT NULL DEFAULT 'Domyślna kategoria'
+- difficulty: TEXT NOT NULL DEFAULT 'medium'
 - created_at: TIMESTAMPTZ NOT NULL DEFAULT now()
 - updated_at: TIMESTAMPTZ NOT NULL DEFAULT now()
 - user_id: UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE
@@ -39,6 +42,7 @@
 
 - CREATE INDEX idx_flashcards_user_id ON flashcards(user_id);
 - CREATE INDEX idx_flashcards_is_public ON flashcards(is_public);
+- CREATE INDEX idx_flashcards_category_id ON flashcards(category_id);
 
 # 4. Row-Level Security (RLS) Policies
 
@@ -59,4 +63,6 @@ CREATE POLICY user_flashcards_policy ON flashcards
 - Timestamps use timezone information (TIMESTAMPTZ) for accurate tracking.
 - The schema adheres to 3NF, ensuring data normalization and minimizing redundancy.
 - Check constraints enforce the character length limits for 'front' and 'back' columns.
-- Indexes on 'user_id' and 'is_public' optimize query performance. 
+- Indexes on 'user_id', 'is_public', and 'category_id' optimize query performance. 
+- The difficulty field supports values like 'easy', 'medium', and 'hard' for quiz filtering.
+- The category_id and category_name fields allow organizing flashcards into thematic groups. 

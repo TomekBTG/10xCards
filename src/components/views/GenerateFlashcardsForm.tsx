@@ -1,10 +1,19 @@
-import { useState } from "react";
-import type { FlashcardDTO, FlashcardGenerationLogDTO, GenerateFlashcardsCommand } from "../../types";
+import { useState, useEffect } from "react";
+import type {
+  FlashcardDTO,
+  FlashcardCategory,
+  FlashcardGenerationLogDTO,
+  GenerateFlashcardsCommand,
+} from "../../types";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { useGenerateFlashcards } from "../../lib/hooks/useGenerateFlashcards";
+import { flashcardService } from "../../lib/services/flashcardService";
 import { toast } from "sonner";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 interface GenerateFlashcardsFormProps {
   onSubmit: (text: string) => void;
@@ -22,7 +31,28 @@ export function GenerateFlashcardsForm({
   error,
 }: GenerateFlashcardsFormProps) {
   const [text, setText] = useState("");
+  const [categories, setCategories] = useState<FlashcardCategory[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
   const { generateFlashcards } = useGenerateFlashcards();
+
+  // Pobranie kategorii przy montowaniu komponentu
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const fetchedCategories = await flashcardService.getCategories();
+        setCategories(fetchedCategories);
+      } catch (error) {
+        console.error("Błąd podczas pobierania kategorii:", error);
+        toast.error("Nie udało się pobrać kategorii", {
+          description: "Wystąpił problem podczas komunikacji z serwerem.",
+        });
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   // Basic validation of text length
   const isTextTooShort = text.length > 0 && text.length < 500;
@@ -33,6 +63,29 @@ export function GenerateFlashcardsForm({
   const minChars = 500;
   const maxChars = 10000;
   const charsRemaining = text.length < minChars ? minChars - text.length : maxChars - text.length;
+
+  // Prepare category data for API
+  const getCategoryData = () => {
+    if (isAddingCategory && newCategoryName.trim()) {
+      const categoryId = `new-${Date.now()}`;
+      return {
+        category_id: categoryId,
+        category_name: newCategoryName.trim(),
+      };
+    } else if (selectedCategoryId) {
+      const selectedCategory = categories.find((cat) => cat.id === selectedCategoryId);
+      if (selectedCategory) {
+        return {
+          category_id: selectedCategory.id,
+          category_name: selectedCategory.name,
+        };
+      }
+    }
+    return {
+      category_id: undefined,
+      category_name: undefined,
+    };
+  };
 
   // Form submission handler
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,8 +113,12 @@ export function GenerateFlashcardsForm({
     });
 
     try {
+      const { category_id, category_name } = getCategoryData();
+
       const command: GenerateFlashcardsCommand = {
         user_input: text,
+        category_id,
+        category_name,
       };
 
       const response = await generateFlashcards(command);
@@ -86,6 +143,16 @@ export function GenerateFlashcardsForm({
     }
   };
 
+  // Obsługa przełączania między wyborem kategorii a dodawaniem nowej
+  const toggleAddCategory = () => {
+    setIsAddingCategory(!isAddingCategory);
+    if (!isAddingCategory) {
+      setSelectedCategoryId(null);
+    } else {
+      setNewCategoryName("");
+    }
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -94,36 +161,83 @@ export function GenerateFlashcardsForm({
 
       <form onSubmit={handleSubmit}>
         <CardContent>
-          <div className="space-y-4">
-            <Textarea
-              placeholder="Wprowadź tekst (min. 500, max. 10000 znaków)..."
-              className="min-h-[200px]"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              disabled={loading}
-            />
-
-            <div className="text-sm flex justify-between">
-              <div>
-                {isTextTooShort && (
-                  <p className="text-red-500">
-                    Tekst musi zawierać minimum 500 znaków. Brakuje {500 - text.length} znaków.
-                  </p>
-                )}
-
-                {isTextTooLong && (
-                  <p className="text-red-500">
-                    Tekst nie może przekraczać 10000 znaków. Usuń {text.length - 10000} znaków.
-                  </p>
-                )}
-
-                {!isTextTooShort && !isTextTooLong && text.length > 0 && (
-                  <p className="text-green-500">Długość tekstu jest odpowiednia.</p>
-                )}
+          <div className="space-y-6">
+            {/* Wybór kategorii */}
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <Label htmlFor="category-select">Kategoria</Label>
+                <Button type="button" variant="ghost" onClick={toggleAddCategory} className="text-sm h-auto py-1">
+                  {isAddingCategory ? "Wybierz istniejącą" : "Dodaj nową kategorię"}
+                </Button>
               </div>
 
-              <div className={`${charsRemaining < 0 ? "text-red-500" : "text-gray-500"}`}>
-                {text.length} / {maxChars} znaków
+              {isAddingCategory ? (
+                <div className="space-y-2">
+                  <Label htmlFor="new-category">Nazwa nowej kategorii</Label>
+                  <Input
+                    id="new-category"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="Wprowadź nazwę nowej kategorii"
+                    disabled={loading}
+                  />
+                </div>
+              ) : (
+                <Select
+                  value={selectedCategoryId || ""}
+                  onValueChange={(value) => setSelectedCategoryId(value || null)}
+                  disabled={loading}
+                >
+                  <SelectTrigger className="w-full" id="category-select">
+                    <SelectValue placeholder="Wybierz kategorię" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name} ({category.count})
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
+            {/* Textarea do wprowadzania tekstu */}
+            <div className="space-y-2">
+              <Label htmlFor="generate-text">Tekst do generowania fiszek</Label>
+              <Textarea
+                id="generate-text"
+                placeholder="Wprowadź tekst (min. 500, max. 10000 znaków)..."
+                className="min-h-[200px]"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                disabled={loading}
+              />
+
+              <div className="text-sm flex justify-between">
+                <div>
+                  {isTextTooShort && (
+                    <p className="text-red-500">
+                      Tekst musi zawierać minimum 500 znaków. Brakuje {500 - text.length} znaków.
+                    </p>
+                  )}
+
+                  {isTextTooLong && (
+                    <p className="text-red-500">
+                      Tekst nie może przekraczać 10000 znaków. Usuń {text.length - 10000} znaków.
+                    </p>
+                  )}
+
+                  {!isTextTooShort && !isTextTooLong && text.length > 0 && (
+                    <p className="text-green-500">Długość tekstu jest odpowiednia.</p>
+                  )}
+                </div>
+
+                <div className={`${charsRemaining < 0 ? "text-red-500" : "text-gray-500"}`}>
+                  {text.length} / {maxChars} znaków
+                </div>
               </div>
             </div>
 

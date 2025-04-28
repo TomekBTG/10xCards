@@ -1,0 +1,11 @@
+---
+import Layout from "../layouts/Layout.astro";
+import UserPanel from "../components/UserPanel";
+---
+
+<Layout title="Profil użytkownika">
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Panel Użytkownika</h1>
+    <UserPanel client:only="react" />
+  </main>
+</Layout>

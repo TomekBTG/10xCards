@@ -8,7 +8,7 @@ import type {
 } from "../../../types";
 import { aiService } from "../../../lib/services/ai.service";
 import { supabaseClient } from "../../../db/supabase.client";
-import { ignoreAuth } from "../../../lib/auth";
+import { isAuthenticated } from "../../../db/supabase";
 
 export const prerender = false;
 
@@ -22,15 +22,18 @@ const generateFlashcardsSchema = z.object({
     .min(500, "Tekst musi zawierać przynajmniej 500 znaków")
     .max(10000, "Tekst nie może przekraczać 10000 znaków")
     .refine((text) => text.trim().length > 0, { message: "Tekst nie może być pusty" }),
+  category_id: z.string().optional(),
+  category_name: z.string().optional(),
 });
 
 export async function POST({ request }: APIContext): Promise<Response> {
   try {
-    // Sprawdzenie autentykacji
-    const {
-      data: { user },
-    } = await supabaseClient.auth.getUser();
-    if (!user && !ignoreAuth) {
+    // Pobierz informacje o sesji
+    await supabaseClient.auth.getSession();
+    // Wywołaj funkcję isAuthenticated
+    const isLoggedIn = await isAuthenticated();
+
+    if (!isLoggedIn) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 
@@ -48,10 +51,10 @@ export async function POST({ request }: APIContext): Promise<Response> {
       );
     }
 
-    const { user_input } = validationResult.data as GenerateFlashcardsCommand;
+    const { user_input, category_id, category_name } = validationResult.data as GenerateFlashcardsCommand;
 
     // 2. Wygeneruj fiszki przy użyciu serwisu AI
-    const generatedFlashcards = await aiService.generateFlashcards(user_input);
+    const generatedFlashcards = await aiService.generateFlashcards(user_input, category_id, category_name);
 
     // 3. Utwórz log generacji
     const generationLog = {
@@ -86,6 +89,8 @@ export async function POST({ request }: APIContext): Promise<Response> {
       flashcard_generation_logs_id: insertedLog.id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      category_id: category_id || null,
+      category_name: category_name || null,
     }));
 
     // 5. Zapisz fiszki w bazie danych

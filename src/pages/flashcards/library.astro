@@ -1,0 +1,11 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import LibraryViewPage from "../../components/library/LibraryViewPage";
+---
+
+<Layout title="Biblioteka Fiszek">
+  <div class="container px-4 py-8 mx-auto">
+    <h1 class="text-3xl font-bold mb-6">Biblioteka Fiszek</h1>
+    <LibraryViewPage client:load />
+  </div>
+</Layout>

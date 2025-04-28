@@ -1,0 +1,29 @@
+---
+import DashboardStatsSection from "@/components/dashboard/DashboardStatsSection";
+import NavigationPanel from "@/components/dashboard/NavigationPanel";
+import DashboardSummary from "@/components/dashboard/DashboardSummary";
+import FilterPanel from "@/components/dashboard/FilterPanel";
+import Layout from "@/layouts/Layout.astro";
+---
+
+<Layout title="Dashboard | 10xCards">
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Dashboard</h1>
+
+    <FilterPanel client:load />
+
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+      <div class="md:col-span-12">
+        <DashboardStatsSection client:load />
+      </div>
+
+      <div class="md:col-span-8">
+        <NavigationPanel client:load />
+      </div>
+
+      <div class="md:col-span-4">
+        <DashboardSummary client:load />
+      </div>
+    </div>
+  </div>
+</Layout>

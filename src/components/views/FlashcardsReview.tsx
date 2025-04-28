@@ -94,8 +94,28 @@ export function FlashcardsReview({ flashcards, generationLog, onReset }: Flashca
   };
 
   // Obsługa edycji treści fiszki
-  const handleEdit = (id: string, front: string, back: string) => {
-    setCards((currentCards) => currentCards.map((card) => (card.id === id ? { ...card, front, back } : card)));
+  const handleEdit = (
+    id: string,
+    front: string,
+    back: string,
+    categoryId?: string,
+    categoryName?: string,
+    difficulty?: string | null
+  ) => {
+    setCards((currentCards) =>
+      currentCards.map((card) =>
+        card.id === id
+          ? {
+              ...card,
+              front,
+              back,
+              category_id: categoryId || card.category_id,
+              category_name: categoryName || card.category_name,
+              difficulty: difficulty || card.difficulty,
+            }
+          : card
+      )
+    );
 
     toast.success("Fiszka została zaktualizowana", {
       description: "Treść fiszki została zapisana.",
@@ -127,6 +147,9 @@ export function FlashcardsReview({ flashcards, generationLog, onReset }: Flashca
         front: card.front,
         back: card.back,
         is_ai_generated: true,
+        category_id: card.category_id,
+        category_name: card.category_name,
+        difficulty: card.difficulty,
       }));
 
       // Wywołanie API do zapisania fiszek
@@ -288,7 +311,9 @@ export function FlashcardsReview({ flashcards, generationLog, onReset }: Flashca
                   flashcard={card}
                   onAccept={() => handleStatusChange(card.id, "accepted")}
                   onReject={() => handleStatusChange(card.id, "rejected")}
-                  onEdit={(front: string, back: string) => handleEdit(card.id, front, back)}
+                  onEdit={(front, back, categoryId, categoryName, difficulty) =>
+                    handleEdit(card.id, front, back, categoryId, categoryName, difficulty)
+                  }
                 />
               ))}
             </div>

@@ -10,8 +10,10 @@ interface SubmitButtonProps {
 }
 
 export function SubmitButton({ text, isLoading, isDisabled = false, onClick }: SubmitButtonProps) {
+  const buttonDisabled = isLoading === true || isDisabled === true ? true : false;
+
   return (
-    <Button type="submit" className="w-full" disabled={isLoading || isDisabled} onClick={onClick}>
+    <Button type="submit" className="w-full" disabled={buttonDisabled} onClick={onClick}>
       {isLoading ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />

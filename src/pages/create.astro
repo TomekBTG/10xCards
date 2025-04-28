@@ -1,0 +1,13 @@
+---
+export const prerender = false;
+
+// Przekierowanie z /create do /flashcards/add
+export function GET() {
+  return new Response("", {
+    status: 302,
+    headers: {
+      Location: "/flashcards/add",
+    },
+  });
+}
+---
