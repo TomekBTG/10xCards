@@ -1,4 +1,5 @@
 import { supabaseClient } from "../../db/supabase.client";
+import { isAuthenticated } from "../../db/supabase";
 import type { DeleteAccountCommand, UpdatePasswordCommand } from "../../types/auth";
 
 /**
@@ -39,9 +40,20 @@ export function useProfileActions() {
       }
 
       // Bezpośrednie wywołanie Supabase - mechanizm awaryjny
-      // Get current session to check email
-      const { data: sessionData } = await supabaseClient.auth.getSession();
-      const userEmail = sessionData.session?.user.email;
+      // Sprawdź czy użytkownik jest zalogowany
+      await supabaseClient.auth.getSession();
+      const isLoggedIn = await isAuthenticated();
+      
+      if (!isLoggedIn) {
+        return {
+          success: false,
+          error: "Nie znaleziono danych użytkownika. Proszę zalogować się ponownie.",
+        };
+      }
+      
+      // Pobierz dane użytkownika
+      const { data: userData } = await supabaseClient.auth.getUser();
+      const userEmail = userData.user?.email;
 
       if (!userEmail) {
         return {
@@ -119,18 +131,32 @@ export function useProfileActions() {
       }
 
       // Bezpośrednie wywołanie Supabase - mechanizm awaryjny
+      // Sprawdź czy użytkownik jest zalogowany
+      await supabaseClient.auth.getSession();
+      const isLoggedIn = await isAuthenticated();
+      
+      if (!isLoggedIn) {
+        return {
+          success: false,
+          error: "Użytkownik nie jest zalogowany.",
+        };
+      }
+
       // If password is provided, verify it first
       if (command?.password) {
-        const { data: session } = await supabaseClient.auth.getSession();
-        if (!session.session) {
+        // Pobierz dane użytkownika
+        const { data: userData } = await supabaseClient.auth.getUser();
+        const userEmail = userData.user?.email;
+        
+        if (!userEmail) {
           return {
-            success: false,
-            error: "Użytkownik nie jest zalogowany.",
+            success: false, 
+            error: "Nie znaleziono danych użytkownika."
           };
         }
 
         const { error: signInError } = await supabaseClient.auth.signInWithPassword({
-          email: session.session.user.email || "",
+          email: userEmail,
           password: command.password,
         });
 

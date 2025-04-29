@@ -5,6 +5,7 @@ import type { Database } from "./db/database.types";
 interface ImportMetaEnv {
   readonly PUBLIC_SUPABASE_URL: string;
   readonly PUBLIC_SUPABASE_KEY: string;
+  readonly PUBLIC_OPENROUTER_API_KEY: string;
 }
 
 interface ImportMeta {

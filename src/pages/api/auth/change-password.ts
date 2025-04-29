@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { supabaseClient } from "../../../db/supabase.client";
+import { isAuthenticated } from "../../../db/supabase";
 import type { UpdatePasswordCommand } from "../../../types/auth";
 import { z } from "zod";
 
@@ -37,9 +38,12 @@ export const POST: APIRoute = async ({ request }) => {
 
     const data = validationResult.data as UpdatePasswordCommand;
 
-    // Pobierz aktualnego użytkownika z sesji
-    const { data: sessionData } = await supabaseClient.auth.getSession();
-    if (!sessionData.session) {
+    // Pobierz informacje o sesji
+    await supabaseClient.auth.getSession();
+    // Wywołaj funkcję isAuthenticated
+    const isLoggedIn = await isAuthenticated();
+
+    if (!isLoggedIn) {
       return new Response(
         JSON.stringify({
           success: false,
@@ -52,7 +56,10 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const userEmail = sessionData.session.user.email;
+    // Pobierz dane użytkownika
+    const { data: userData } = await supabaseClient.auth.getUser();
+    const userEmail = userData.user?.email;
+    
     if (!userEmail) {
       return new Response(
         JSON.stringify({

@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { supabaseClient } from "../../../db/supabase.client";
+import { isAuthenticated } from "../../../db/supabase";
 import { z } from "zod";
 
 // Schemat walidacji dla usuwania konta
@@ -29,9 +30,12 @@ export const DELETE: APIRoute = async ({ request }) => {
 
     const data = validationResult.data as { password: string };
 
-    // Pobierz aktualnego użytkownika z sesji
-    const { data: sessionData } = await supabaseClient.auth.getSession();
-    if (!sessionData.session) {
+    // Pobierz informacje o sesji
+    await supabaseClient.auth.getSession();
+    // Wywołaj funkcję isAuthenticated
+    const isLoggedIn = await isAuthenticated();
+
+    if (!isLoggedIn) {
       return new Response(
         JSON.stringify({
           success: false,
@@ -44,8 +48,10 @@ export const DELETE: APIRoute = async ({ request }) => {
       );
     }
 
-    const userEmail = sessionData.session.user.email;
-    const userId = sessionData.session.user.id;
+    // Pobierz dane użytkownika
+    const { data: userData } = await supabaseClient.auth.getUser();
+    const userEmail = userData.user?.email;
+    const userId = userData.user?.id;
 
     if (!userEmail || !userId) {
       return new Response(
