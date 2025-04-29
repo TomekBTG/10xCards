@@ -1,5 +1,6 @@
 // Import the Database type from the database models
 import type { Database } from "./db/database.types";
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 // --------------------------------------------------
 // DTO and Command Model Definitions for API
@@ -148,3 +149,13 @@ export interface QuizState {
   sessionOptions: QuizSessionOptions;
   categories: FlashcardCategory[];
 }
+
+// Rozszerzenie typu Locals dla Astro
+declare namespace App {
+  interface Locals {
+    isAuthenticated: boolean;
+    supabase: SupabaseClient;
+  }
+}
+
+// Tutaj możemy dodać inne typy dla aplikacji

@@ -3,7 +3,6 @@ import type { APIRoute } from "astro";
 import type { FlashcardsListResponseDTO } from "../../../types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../../../db/database.types";
-import { isAuthenticated } from "../../../db/supabase";
 import { flashcardService } from "../../../lib/services/flashcardService";
 
 // Definicja interfejsu dla locals jeśli App.Locals nie jest rozpoznawany
@@ -17,10 +16,8 @@ const ignoreAuth = false;
 export const GET: APIRoute = async ({ request, locals }) => {
   const supabase = (locals as LocalsWithSupabase).supabase;
 
-  // Pobierz informacje o sesji
-  await supabase.auth.getSession();
-  // Wywołaj funkcję isAuthenticated
-  const isLoggedIn = await isAuthenticated();
+  // Sprawdź uwierzytelnienie z middleware
+  const isLoggedIn = 'isAuthenticated' in locals ? locals.isAuthenticated as boolean : false;
 
   if (!isLoggedIn && !ignoreAuth) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
@@ -117,10 +114,8 @@ export const GET: APIRoute = async ({ request, locals }) => {
 export const POST: APIRoute = async ({ request, locals }) => {
   const supabase = (locals as LocalsWithSupabase).supabase;
 
-  // Pobierz informacje o sesji
-  await supabase.auth.getSession();
-  // Wywołaj funkcję isAuthenticated
-  const isLoggedIn = await isAuthenticated();
+  // Sprawdź uwierzytelnienie z middleware
+  const isLoggedIn = 'isAuthenticated' in locals ? locals.isAuthenticated as boolean : false;
 
   if (!isLoggedIn && !ignoreAuth) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });

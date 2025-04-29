@@ -2,7 +2,6 @@
 import "../styles/global.css";
 import { Toaster } from "../components/ui/sonner";
 import UserMenu from "../components/UserMenu";
-import { isAuthenticated, supabase } from "../db/supabase";
 import AuthStateProvider from "../components/AuthStateProvider";
 
 interface Props {
@@ -11,19 +10,22 @@ interface Props {
 
 const { title } = Astro.props;
 
-// Pobierz informacje o sesji
-const { data } = await supabase.auth.getSession();
-// Wywołaj funkcję isAuthenticated
-const isLoggedIn = await isAuthenticated();
+// Wykorzystaj stan autoryzacji z middleware z fallbackiem w razie braku wartości
+const isLoggedIn = 'isAuthenticated' in Astro.locals 
+  ? Astro.locals.isAuthenticated as boolean 
+  : false;
 
-// Dodajmy jeszcze sprawdzenie, czy user istnieje w sesji
-if (data.session?.user) {
-  console.log("Layout - Dane użytkownika:", {
-    id: data.session.user.id,
-    email: data.session.user.email,
-    role: data.session.user.role,
-  });
-}
+// // Pobierz informacje o sesji (zostawiamy tylko dla danych użytkownika)
+// const { data } = await supabase.auth.getSession();
+
+// // Dodajmy jeszcze sprawdzenie, czy user istnieje w sesji
+// if (data.session?.user) {
+//   console.log("Layout - Dane użytkownika:", {
+//     id: data.session.user.id,
+//     email: data.session.user.email,
+//     role: data.session.user.role,
+//   });
+// }
 ---
 
 <!doctype html>

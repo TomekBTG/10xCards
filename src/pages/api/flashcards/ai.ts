@@ -8,7 +8,6 @@ import type {
 } from "../../../types";
 import { aiService } from "../../../lib/services/ai.service";
 import { supabaseClient } from "../../../db/supabase.client";
-import { isAuthenticated } from "../../../db/supabase";
 
 export const prerender = false;
 
@@ -26,12 +25,10 @@ const generateFlashcardsSchema = z.object({
   category_name: z.string().optional(),
 });
 
-export async function POST({ request }: APIContext): Promise<Response> {
+export async function POST({ request, locals }: APIContext): Promise<Response> {
   try {
-    // Pobierz informacje o sesji
-    await supabaseClient.auth.getSession();
-    // Wywołaj funkcję isAuthenticated
-    const isLoggedIn = await isAuthenticated();
+    // Sprawdź uwierzytelnienie z middleware
+    const isLoggedIn = 'isAuthenticated' in locals ? locals.isAuthenticated as boolean : false;
 
     if (!isLoggedIn) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });

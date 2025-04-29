@@ -1,7 +1,6 @@
 import { z } from "zod";
 import type { APIRoute } from "astro";
 import type { FlashcardDTO, FlashcardGenerationLogDTO } from "../../../../types";
-import { isAuthenticated } from "../../../../db/supabase";
 
 // Definicja interfejsu dla locals jeśli App.Locals nie jest rozpoznawany
 interface LocalsWithSupabase {
@@ -21,16 +20,12 @@ interface LocalsWithSupabase {
   };
 }
 
-// Tymczasowo ustawiam wartość ignoreAuth na false
-const ignoreAuth = false;
 
 export const GET: APIRoute = async ({ params, locals }) => {
-  // Pobierz informacje o sesji
-  await (locals as LocalsWithSupabase).supabase.auth.getSession();
-  // Wywołaj funkcję isAuthenticated
-  const isLoggedIn = await isAuthenticated();
-
-  if (!isLoggedIn && !ignoreAuth) {
+  // Sprawdź uwierzytelnienie z middleware
+  const isLoggedIn = 'isAuthenticated' in locals ? locals.isAuthenticated as boolean : false;
+  
+  if (!isLoggedIn) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }
 
@@ -45,7 +40,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
   }
 
   const generationId = parsedGenerationId.data;
-  console.log("Fetching flashcards for generationId:", generationId);
 
   try {
     // TODO: Implement business logic to fetch flashcards and generation log by generationId using service layer

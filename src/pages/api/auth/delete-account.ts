@@ -1,6 +1,5 @@
 import type { APIRoute } from "astro";
 import { supabaseClient } from "../../../db/supabase.client";
-import { isAuthenticated } from "../../../db/supabase";
 import { z } from "zod";
 
 // Schemat walidacji dla usuwania konta
@@ -8,7 +7,7 @@ const deleteAccountSchema = z.object({
   password: z.string().min(1, "Hasło jest wymagane do potwierdzenia"),
 });
 
-export const DELETE: APIRoute = async ({ request }) => {
+export const DELETE: APIRoute = async ({ request, locals }) => {
   try {
     // Pobierz dane z żądania
     const body = await request.json();
@@ -30,10 +29,8 @@ export const DELETE: APIRoute = async ({ request }) => {
 
     const data = validationResult.data as { password: string };
 
-    // Pobierz informacje o sesji
-    await supabaseClient.auth.getSession();
-    // Wywołaj funkcję isAuthenticated
-    const isLoggedIn = await isAuthenticated();
+    // Sprawdź uwierzytelnienie z middleware
+    const isLoggedIn = 'isAuthenticated' in locals ? locals.isAuthenticated as boolean : false;
 
     if (!isLoggedIn) {
       return new Response(

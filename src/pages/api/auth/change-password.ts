@@ -1,6 +1,5 @@
 import type { APIRoute } from "astro";
 import { supabaseClient } from "../../../db/supabase.client";
-import { isAuthenticated } from "../../../db/supabase";
 import type { UpdatePasswordCommand } from "../../../types/auth";
 import { z } from "zod";
 
@@ -16,7 +15,7 @@ const passwordChangeSchema = z
     path: ["confirm_password"],
   });
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
     // Pobierz dane z żądania
     const body = await request.json();
@@ -38,10 +37,8 @@ export const POST: APIRoute = async ({ request }) => {
 
     const data = validationResult.data as UpdatePasswordCommand;
 
-    // Pobierz informacje o sesji
-    await supabaseClient.auth.getSession();
-    // Wywołaj funkcję isAuthenticated
-    const isLoggedIn = await isAuthenticated();
+    // Sprawdź uwierzytelnienie z middleware
+    const isLoggedIn = 'isAuthenticated' in locals ? locals.isAuthenticated as boolean : false;
 
     if (!isLoggedIn) {
       return new Response(
