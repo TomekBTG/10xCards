@@ -11,8 +11,11 @@ const QuizNavigation: React.FC<QuizNavigationProps> = ({ revealed, onReveal, onM
   // Jeśli odpowiedź nie jest ujawniona, pokaż przycisk "Pokaż odpowiedź"
   if (!revealed) {
     return (
-      <div className="mt-6 flex justify-center">
-        <Button onClick={onReveal} className="px-8" size="lg">
+      <div className="flex justify-center">
+        <Button 
+          onClick={onReveal} 
+          className="px-8 bg-blue-600 hover:bg-blue-700 text-white"
+        >
           Pokaż odpowiedź
         </Button>
       </div>
@@ -21,12 +24,11 @@ const QuizNavigation: React.FC<QuizNavigationProps> = ({ revealed, onReveal, onM
 
   // Po ujawnieniu odpowiedzi, pokaż przyciski oceny
   return (
-    <div className="mt-6 flex justify-between w-full">
+    <div className="flex justify-between w-full">
       <Button
         onClick={() => onMark(false)}
         variant="outline"
-        size="lg"
-        className="flex-1 mr-2 border-2 border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
+        className="flex-1 mr-2 border-2 border-red-500 dark:border-red-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -48,8 +50,7 @@ const QuizNavigation: React.FC<QuizNavigationProps> = ({ revealed, onReveal, onM
       <Button
         onClick={() => onMark(true)}
         variant="outline"
-        size="lg"
-        className="flex-1 ml-2 border-2 border-success text-success hover:bg-success/10 hover:text-success"
+        className="flex-1 ml-2 border-2 border-green-500 dark:border-green-600 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
       >
         Pamiętałem/am
         <svg

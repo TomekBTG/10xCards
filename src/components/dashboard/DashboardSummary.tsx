@@ -1,115 +1,69 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useDashboardSummary } from "@/hooks/useDashboardSummary";
+import React from 'react';
 
-type SortDirection = "asc" | "desc";
-type SortField = "date" | "count";
+interface ActivityItem {
+  date: string;
+  action: string;
+  details: string;
+}
 
-export default function DashboardSummary() {
-  const [limit, setLimit] = useState<number>(5);
-  const [sortField, setSortField] = useState<SortField>("date");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
-
-  const { summary, isLoading, error, refreshSummary, formatDate } = useDashboardSummary({ limit });
-
-  // Funkcja sortująca dane
-  const getSortedGenerations = () => {
-    if (!summary?.recentGenerations) return [];
-
-    return [...summary.recentGenerations].sort((a, b) => {
-      if (sortField === "date") {
-        const dateA = new Date(a.date).getTime();
-        const dateB = new Date(b.date).getTime();
-        return sortDirection === "asc" ? dateA - dateB : dateB - dateA;
-      } else {
-        return sortDirection === "asc" ? a.count - b.count : b.count - a.count;
-      }
-    });
-  };
-
-  // Zmiana kierunku sortowania
-  const toggleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("desc");
+const DashboardSummary: React.FC = () => {
+  // Przykładowe ostatnie aktywności
+  const recentActivity: ActivityItem[] = [
+    {
+      date: '28 kwi',
+      action: 'Quiz ukończony',
+      details: 'Angielski: Czasy przeszłe - 85%'
+    },
+    {
+      date: '27 kwi',
+      action: 'Fiszki dodane',
+      details: 'Dodano 15 nowych fiszek'
+    },
+    {
+      date: '26 kwi',
+      action: 'Quiz ukończony',
+      details: 'Programowanie: JavaScript - 92%'
+    },
+    {
+      date: '25 kwi',
+      action: 'Fiszki wygenerowane',
+      details: 'Historia: II Wojna Światowa'
     }
-  };
-
-  // Sortowane dane
-  const sortedGenerations = getSortedGenerations();
+  ];
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Ostatnie aktywności</CardTitle>
-        <Button variant="ghost" size="sm" onClick={refreshSummary} disabled={isLoading}>
-          {isLoading ? "Odświeżanie..." : "Odśwież"}
-        </Button>
-      </CardHeader>
-      <CardContent>
-        {error && <div className="text-red-500 text-sm p-2 mb-3">{error}</div>}
-
-        {!isLoading && !error && (
-          <div className="flex justify-between text-sm font-medium mb-2 px-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex items-center gap-1 p-1 h-auto"
-              onClick={() => toggleSort("date")}
-            >
-              Data
-              {sortField === "date" && <span>{sortDirection === "asc" ? "↑" : "↓"}</span>}
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex items-center gap-1 p-1 h-auto"
-              onClick={() => toggleSort("count")}
-            >
-              Ilość
-              {sortField === "count" && <span>{sortDirection === "asc" ? "↑" : "↓"}</span>}
-            </Button>
-          </div>
-        )}
-
-        {isLoading ? (
-          <div className="space-y-3">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-8 bg-gray-100 rounded-md animate-pulse"></div>
-            ))}
-          </div>
-        ) : error ? (
-          <div className="text-red-500 text-sm p-2">{error}</div>
-        ) : sortedGenerations.length > 0 ? (
-          <ul className="space-y-3">
-            {sortedGenerations.map((gen) => (
-              <li key={gen.id} className="flex justify-between items-center border-b pb-2">
-                <div>
-                  <span className="text-sm text-muted-foreground">{formatDate(gen.date)}</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="font-medium">{gen.count}</span>
-                  <span className="ml-1 text-sm text-muted-foreground">fiszek</span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-center py-4 text-gray-500">Brak ostatnich aktywności</p>
-        )}
-
-        {!isLoading && sortedGenerations.length > 0 && (
-          <div className="mt-4 text-center">
-            <Button variant="outline" size="sm" onClick={() => setLimit((prev) => prev + 5)}>
-              Pokaż więcej
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <div>
+      <h2 className="text-xl font-semibold mb-5 text-white">Podsumowanie</h2>
+      
+      <div className="mb-6">
+        <h3 className="text-md font-medium mb-3 text-zinc-300">Obecny postęp</h3>
+        <div className="mb-2 flex justify-between">
+          <span className="text-zinc-400 text-sm">Ukończone sesje: 28/30</span>
+          <span className="text-zinc-400 text-sm">93%</span>
+        </div>
+        <div className="w-full bg-zinc-800 rounded-full h-2.5">
+          <div className="bg-blue-500 h-2.5 rounded-full" style={{ width: '93%' }}></div>
+        </div>
+      </div>
+      
+      <div>
+        <h3 className="text-md font-medium mb-3 text-zinc-300">Ostatnia aktywność</h3>
+        <div className="space-y-3">
+          {recentActivity.map((activity, index) => (
+            <div key={index} className="flex p-3 rounded-lg bg-zinc-800/30 border border-zinc-800/50">
+              <div className="text-center mr-4 min-w-[40px]">
+                <div className="text-xs text-zinc-400">{activity.date}</div>
+              </div>
+              <div>
+                <div className="font-medium text-white">{activity.action}</div>
+                <div className="text-sm text-zinc-400">{activity.details}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
-}
+};
+
+export default DashboardSummary;

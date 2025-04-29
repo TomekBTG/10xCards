@@ -11,6 +11,7 @@ export interface FlashcardsFilter {
   difficulty?: string;
   createdBefore?: Date;
   createdAfter?: Date;
+  searchTerm?: string;
 }
 
 // Rozszerzony typ fiszki dla obsługi UI
@@ -265,7 +266,7 @@ const LibraryViewPage = () => {
   return (
     <div className="space-y-6">
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded" role="alert">
+        <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded" role="alert">
           <p>{error}</p>
         </div>
       )}
@@ -282,11 +283,11 @@ const LibraryViewPage = () => {
 
       {isLoading ? (
         <div className="flex justify-center items-center h-40">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 dark:border-blue-400"></div>
         </div>
       ) : flashcards.length === 0 ? (
-        <div className="bg-white p-8 rounded-lg shadow text-center">
-          <p className="text-gray-500">Brak fiszek pasujących do wybranych kryteriów</p>
+        <div className="bg-white dark:bg-zinc-900 p-8 rounded-lg shadow dark:shadow-zinc-800/20 text-center">
+          <p className="text-gray-500 dark:text-gray-400">Brak fiszek pasujących do wybranych kryteriów</p>
         </div>
       ) : (
         <FlashcardList
@@ -304,9 +305,9 @@ const LibraryViewPage = () => {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-6">
           {/* Wybór liczby elementów na stronie */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Elementy na stronie:</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">Elementy na stronie:</span>
             <select
-              className="px-2 py-1 border rounded"
+              className="px-2 py-1 border rounded dark:bg-zinc-800 dark:border-zinc-700 dark:text-white"
               value={pagination.limit}
               onChange={(e) => handleLimitChange(Number(e.target.value))}
             >
@@ -323,7 +324,7 @@ const LibraryViewPage = () => {
               <button
                 onClick={() => handlePageChange(1)}
                 disabled={pagination.page === 1}
-                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="sr-only">Pierwsza strona</span>
                 <span>&laquo;</span>
@@ -331,7 +332,7 @@ const LibraryViewPage = () => {
               <button
                 onClick={() => handlePageChange(Math.max(1, pagination.page - 1))}
                 disabled={pagination.page === 1}
-                className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="relative inline-flex items-center px-2 py-2 border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="sr-only">Poprzednia strona</span>
                 <span>&lsaquo;</span>
@@ -362,8 +363,8 @@ const LibraryViewPage = () => {
                       onClick={() => handlePageChange(pageNumber)}
                       className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                         pagination.page === pageNumber
-                          ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
-                          : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                          ? "z-10 bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-700 text-blue-600 dark:text-blue-400"
+                          : "bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-700"
                       }`}
                     >
                       {pageNumber}
@@ -378,7 +379,7 @@ const LibraryViewPage = () => {
                   handlePageChange(Math.min(Math.ceil(pagination.total / pagination.limit), pagination.page + 1))
                 }
                 disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
-                className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="relative inline-flex items-center px-2 py-2 border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="sr-only">Następna strona</span>
                 <span>&rsaquo;</span>
@@ -386,7 +387,7 @@ const LibraryViewPage = () => {
               <button
                 onClick={() => handlePageChange(Math.ceil(pagination.total / pagination.limit))}
                 disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
-                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="sr-only">Ostatnia strona</span>
                 <span>&raquo;</span>
@@ -395,7 +396,7 @@ const LibraryViewPage = () => {
           )}
 
           {/* Informacja o paginacji */}
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
             Wyświetlanie {Math.min((pagination.page - 1) * pagination.limit + 1, pagination.total)} -{" "}
             {Math.min(pagination.page * pagination.limit, pagination.total)} z {pagination.total}
           </div>

@@ -24,8 +24,8 @@ export function LoginForm() {
         </h2>
 
         {formState.errors.form && (
-          <div className="rounded-md bg-red-50 p-4 border border-red-200" role="alert" aria-live="assertive">
-            <p className="text-sm text-red-700">{formState.errors.form}</p>
+          <div className="rounded-md bg-red-900/20 p-4 border border-red-800/30" role="alert" aria-live="assertive">
+            <p className="text-sm text-red-400">{formState.errors.form}</p>
           </div>
         )}
 
@@ -49,20 +49,20 @@ export function LoginForm() {
               id="remember-me"
               name="remember-me"
               type="checkbox"
-              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary-focus"
+              className="h-4 w-4 rounded border-zinc-700 bg-zinc-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-zinc-900"
               aria-describedby="remember-me-description"
             />
             <label
               id="remember-me-description"
               htmlFor="remember-me"
-              className="ml-2 block text-sm text-muted-foreground"
+              className="ml-2 block text-sm text-zinc-400"
             >
               Zapamiętaj mnie
             </label>
           </div>
 
           <div className="text-sm">
-            <a href="/reset-password" className="font-medium text-primary hover:text-primary/80">
+            <a href="/reset-password" className="font-medium text-blue-500 hover:text-blue-400">
               Zapomniałeś hasła?
             </a>
           </div>

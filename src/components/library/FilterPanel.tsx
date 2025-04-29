@@ -3,13 +3,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import type { FlashcardStatus } from "../../types";
 import type { FlashcardsFilter } from "./LibraryViewPage";
 import { cn } from "@/lib/utils";
-import { Label } from "@/components/ui/label";
 import { flashcardService } from "@/lib/services/flashcardService";
 
 interface FilterPanelProps {
@@ -21,11 +22,13 @@ type DifficultyType = "easy" | "medium" | "hard" | "all";
 
 const FilterPanel = ({ onFilterChange }: FilterPanelProps) => {
   // Stan filtrów
+  const [filters, setFilters] = useState<FlashcardsFilter>({});
   const [status, setStatus] = useState<ExtendedFlashcardStatus>("all");
   const [categoryId, setCategoryId] = useState<string>("all");
   const [difficulty, setDifficulty] = useState<DifficultyType>("all");
   const [createdBefore, setCreatedBefore] = useState<Date | undefined>(undefined);
   const [createdAfter, setCreatedAfter] = useState<Date | undefined>(undefined);
+  const [searchTerm, setSearchTerm] = useState<string>("");
   // Stan dla przechowywania dostępnych kategorii
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
 
@@ -43,7 +46,7 @@ const FilterPanel = ({ onFilterChange }: FilterPanelProps) => {
     fetchCategories();
   }, []);
 
-  // Funkcja do ręcznego stosowania filtrów (zamiast automatycznych efektów)
+  // Funkcja do ręcznego stosowania filtrów
   const applyFilters = useCallback(() => {
     const newFilters: FlashcardsFilter = {};
 
@@ -67,44 +70,35 @@ const FilterPanel = ({ onFilterChange }: FilterPanelProps) => {
       newFilters.createdAfter = createdAfter;
     }
 
+    if (searchTerm) {
+      newFilters.searchTerm = searchTerm;
+    }
+
     onFilterChange(newFilters);
-  }, [status, categoryId, difficulty, createdBefore, createdAfter, onFilterChange]);
+  }, [status, categoryId, difficulty, createdBefore, createdAfter, searchTerm, onFilterChange]);
 
-  // Obsługa zmian filtrów po zmianie wartości
-  const handleStatusChange = (value: string) => {
-    setStatus(value as ExtendedFlashcardStatus);
-    // Opóźnione wywołanie, aby uniknąć wywołania podczas montowania komponentu
-    setTimeout(() => {
-      applyFilters();
-    }, 0);
-  };
-
-  const handleCategoryChange = (value: string) => {
-    setCategoryId(value);
-    setTimeout(() => {
-      applyFilters();
-    }, 0);
-  };
-
-  const handleDifficultyChange = (value: string) => {
-    setDifficulty(value as DifficultyType);
-    setTimeout(() => {
-      applyFilters();
-    }, 0);
-  };
-
-  const handleDateAfterChange = (date: Date | undefined) => {
-    setCreatedAfter(date);
-    setTimeout(() => {
-      applyFilters();
-    }, 0);
-  };
-
-  const handleDateBeforeChange = (date: Date | undefined) => {
-    setCreatedBefore(date);
-    setTimeout(() => {
-      applyFilters();
-    }, 0);
+  // Obsługa zmian filtrów
+  const handleFilterChange = (key: string, value: string | Date | undefined) => {
+    switch (key) {
+      case "status":
+        setStatus(value as ExtendedFlashcardStatus);
+        break;
+      case "categoryId":
+        setCategoryId(value as string);
+        break;
+      case "difficulty":
+        setDifficulty(value as DifficultyType);
+        break;
+      case "createdBefore":
+        setCreatedBefore(value as Date | undefined);
+        break;
+      case "createdAfter":
+        setCreatedAfter(value as Date | undefined);
+        break;
+      case "searchTerm":
+        setSearchTerm(value as string);
+        break;
+    }
   };
 
   // Resetowanie filtrów
@@ -114,137 +108,176 @@ const FilterPanel = ({ onFilterChange }: FilterPanelProps) => {
     setDifficulty("all");
     setCreatedBefore(undefined);
     setCreatedAfter(undefined);
+    setSearchTerm("");
 
     // Wyczyść filtry przez przekazanie pustego obiektu
-    // To spowoduje, że zapytanie do API zostanie wykonane bez dodatkowych parametrów
-    setTimeout(() => {
-      onFilterChange({});
-    }, 0);
+    onFilterChange({});
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow">
-      <div className="text-lg font-semibold mb-4">Filtry</div>
-
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        {/* Filtr statusu */}
-        <div>
-          <Label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1">
-            Status
-          </Label>
-          <Select value={status} onValueChange={handleStatusChange}>
-            <SelectTrigger id="status-filter">
-              <SelectValue placeholder="Wybierz status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Wszystkie</SelectItem>
-              <SelectItem value="accepted">Zaakceptowane</SelectItem>
-              <SelectItem value="rejected">Odrzucone</SelectItem>
-              <SelectItem value="pending">Oczekujące</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Filtr kategorii */}
-        <div>
-          <Label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 mb-1">
-            Kategoria
-          </Label>
-          <Select value={categoryId} onValueChange={handleCategoryChange}>
-            <SelectTrigger id="category-filter">
-              <SelectValue placeholder="Wybierz kategorię" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Wszystkie</SelectItem>
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Filtr trudności */}
-        <div>
-          <Label htmlFor="difficulty-filter" className="block text-sm font-medium text-gray-700 mb-1">
-            Trudność
-          </Label>
-          <Select value={difficulty} onValueChange={handleDifficultyChange}>
-            <SelectTrigger id="difficulty-filter">
-              <SelectValue placeholder="Wybierz trudność" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Wszystkie</SelectItem>
-              <SelectItem value="easy">Łatwe</SelectItem>
-              <SelectItem value="medium">Średnie</SelectItem>
-              <SelectItem value="hard">Trudne</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Filtr daty "od" */}
-        <div>
-          <Label htmlFor="date-from" className="block text-sm font-medium text-gray-700 mb-1">
-            Utworzone od
-          </Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                id="date-from"
-                variant="outline"
-                className={cn("w-full justify-start text-left font-normal", !createdAfter && "text-muted-foreground")}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {createdAfter ? format(createdAfter, "PP", { locale: pl }) : <span>Wybierz datę</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={createdAfter}
-                onSelect={handleDateAfterChange}
-                initialFocus
-                locale={pl}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        {/* Filtr daty "do" */}
-        <div>
-          <Label htmlFor="date-to" className="block text-sm font-medium text-gray-700 mb-1">
-            Utworzone do
-          </Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                id="date-to"
-                variant="outline"
-                className={cn("w-full justify-start text-left font-normal", !createdBefore && "text-muted-foreground")}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {createdBefore ? format(createdBefore, "PP", { locale: pl }) : <span>Wybierz datę</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={createdBefore}
-                onSelect={handleDateBeforeChange}
-                initialFocus
-                locale={pl}
-              />
-            </PopoverContent>
-          </Popover>
+    <div className="mb-6 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-zinc-800">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Filtry</h2>
+          <Button
+            onClick={handleResetFilters}
+            variant="ghost"
+            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+          >
+            Resetuj filtry
+          </Button>
         </div>
       </div>
+      
+      <div className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+          {/* Status fiszki */}
+          <div className="space-y-2">
+            <Label htmlFor="status" className="text-gray-700 dark:text-gray-300">Status</Label>
+            <Select
+              value={status}
+              onValueChange={(value) => handleFilterChange("status", value)}
+            >
+              <SelectTrigger id="status" className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100">
+                <SelectValue placeholder="Wybierz status" />
+              </SelectTrigger>
+              <SelectContent className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100">
+                <SelectItem value="all">Wszystkie statusy</SelectItem>
+                <SelectItem value="accepted">Zaakceptowane</SelectItem>
+                <SelectItem value="rejected">Odrzucone</SelectItem>
+                <SelectItem value="pending">Oczekujące</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-      {/* Przycisk resetowania filtrów */}
-      <div className="mt-4 flex justify-end">
-        <Button variant="outline" onClick={handleResetFilters}>
-          Resetuj filtry
-        </Button>
+          {/* Kategoria */}
+          <div className="space-y-2">
+            <Label htmlFor="category" className="text-gray-700 dark:text-gray-300">Kategoria</Label>
+            <Select
+              value={categoryId}
+              onValueChange={(value) => handleFilterChange("categoryId", value)}
+            >
+              <SelectTrigger id="category" className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100">
+                <SelectValue placeholder="Wybierz kategorię" />
+              </SelectTrigger>
+              <SelectContent className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100">
+                <SelectItem value="all">Wszystkie kategorie</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Poziom trudności */}
+          <div className="space-y-2">
+            <Label htmlFor="difficulty" className="text-gray-700 dark:text-gray-300">Poziom trudności</Label>
+            <Select
+              value={difficulty}
+              onValueChange={(value) => handleFilterChange("difficulty", value)}
+            >
+              <SelectTrigger id="difficulty" className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100">
+                <SelectValue placeholder="Wybierz poziom trudności" />
+              </SelectTrigger>
+              <SelectContent className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100">
+                <SelectItem value="all">Wszystkie poziomy</SelectItem>
+                <SelectItem value="easy">Łatwy</SelectItem>
+                <SelectItem value="medium">Średni</SelectItem>
+                <SelectItem value="hard">Trudny</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Data utworzenia - od */}
+          <div className="space-y-2">
+            <Label htmlFor="dateFrom" className="text-gray-700 dark:text-gray-300">Data utworzenia - od</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  id="dateFrom"
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100",
+                    !createdAfter && "text-gray-500 dark:text-gray-400"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {createdAfter ? (
+                    format(createdAfter, "PP", { locale: pl })
+                  ) : (
+                    <span>Wybierz datę</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700">
+                <Calendar
+                  mode="single"
+                  selected={createdAfter}
+                  onSelect={(date) => handleFilterChange("createdAfter", date)}
+                  locale={pl}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Data utworzenia - do */}
+          <div className="space-y-2">
+            <Label htmlFor="dateTo" className="text-gray-700 dark:text-gray-300">Data utworzenia - do</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  id="dateTo"
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100",
+                    !createdBefore && "text-gray-500 dark:text-gray-400"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {createdBefore ? (
+                    format(createdBefore, "PP", { locale: pl })
+                  ) : (
+                    <span>Wybierz datę</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700">
+                <Calendar
+                  mode="single"
+                  selected={createdBefore}
+                  onSelect={(date) => handleFilterChange("createdBefore", date)}
+                  locale={pl}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Wyszukiwarka */}
+          <div className="space-y-2">
+            <Label htmlFor="search" className="text-gray-700 dark:text-gray-300">Szukaj</Label>
+            <Input
+              id="search"
+              type="text"
+              placeholder="Wprowadź tekst..."
+              value={searchTerm}
+              onChange={(e) => handleFilterChange("searchTerm", e.target.value)}
+              className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end mt-4">
+          <Button 
+            onClick={applyFilters}
+            className="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Zastosuj filtry
+          </Button>
+        </div>
       </div>
     </div>
   );

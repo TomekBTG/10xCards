@@ -332,7 +332,7 @@ export default function FlashcardsAddForm() {
       </div>
 
       {/* Przyciski akcji */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3 justify-end">
         <Button type="button" variant="outline" onClick={addFlashcard}>
           Dodaj kolejną fiszkę
         </Button>
@@ -349,7 +349,7 @@ export default function FlashcardsAddForm() {
         </Button>
 
         {formState.flashcards.length > 1 && (
-          <Button type="button" variant="outline" onClick={resetForm}>
+          <Button type="button" variant="outline" onClick={resetForm} className="mr-auto">
             Wyczyść formularz
           </Button>
         )}

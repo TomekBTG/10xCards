@@ -13,7 +13,7 @@ const QuizTimer: React.FC<QuizTimerProps> = ({ seconds }) => {
   };
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1 bg-muted rounded-full text-muted-foreground font-mono">
+    <div className="flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-zinc-800 rounded-full text-gray-600 dark:text-gray-400 font-mono">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"
@@ -24,7 +24,7 @@ const QuizTimer: React.FC<QuizTimerProps> = ({ seconds }) => {
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="animate-pulse"
+        className="animate-pulse text-blue-500 dark:text-blue-400"
       >
         <circle cx="12" cy="12" r="10" />
         <polyline points="12 6 12 12 16 14" />

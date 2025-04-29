@@ -29,7 +29,11 @@ export function FlashcardDifficultySelector({ value, onChange }: FlashcardDiffic
 
   return (
     <div className="space-y-2">
-      <Label className="text-sm font-medium">Poziom trudności</Label>
+      <div className="flex justify-between items-center">
+        <Label className="text-sm font-medium">Poziom trudności</Label>
+        {/* Pusty element, który symuluje wysokość przycisku w komponencie kategorii */}
+        <div className="h-7"></div>
+      </div>
       <Select value={value || "none"} onValueChange={handleChange}>
         <SelectTrigger>
           <SelectValue placeholder="Wybierz poziom trudności" />

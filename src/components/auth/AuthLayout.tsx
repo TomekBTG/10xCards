@@ -9,15 +9,15 @@ interface AuthLayoutProps {
 
 export function AuthLayout({ children, pageTitle, alternateLink, alternateLinkText }: AuthLayoutProps) {
   return (
-    <div className="flex min-h-screen flex-col justify-center bg-gray-50 py-12 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen flex-col justify-center bg-gray-50 dark:bg-zinc-900 py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900">{pageTitle}</h2>
+          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">{pageTitle}</h2>
         </div>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-white dark:bg-zinc-800 px-4 py-8 shadow sm:rounded-lg sm:px-10 border border-gray-200 dark:border-zinc-700">
           {children}
 
           <div className="mt-6 text-center text-sm text-muted-foreground">

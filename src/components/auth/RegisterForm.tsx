@@ -17,8 +17,8 @@ export function RegisterForm() {
         </h2>
 
         {formState.errors.form && (
-          <div className="rounded-md bg-red-50 p-4 border border-red-200" role="alert" aria-live="assertive">
-            <p className="text-sm text-red-700">{formState.errors.form}</p>
+          <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4 border border-red-200 dark:border-red-800" role="alert" aria-live="assertive">
+            <p className="text-sm text-red-700 dark:text-red-400">{formState.errors.form}</p>
           </div>
         )}
 

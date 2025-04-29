@@ -60,12 +60,21 @@ const FlashcardItem = ({ flashcard, onSelect, onUpdate, onDelete }: FlashcardIte
   const getStatusDetails = () => {
     switch (flashcard.status) {
       case "accepted":
-        return { label: "Zaakceptowana", color: "bg-green-100 text-green-800" };
+        return { 
+          label: "Zaakceptowana", 
+          color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" 
+        };
       case "rejected":
-        return { label: "Odrzucona", color: "bg-red-100 text-red-800" };
+        return { 
+          label: "Odrzucona", 
+          color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300" 
+        };
       case "pending":
       default:
-        return { label: "Oczekująca", color: "bg-yellow-100 text-yellow-800" };
+        return { 
+          label: "Oczekująca", 
+          color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300" 
+        };
     }
   };
 
@@ -162,7 +171,7 @@ const FlashcardItem = ({ flashcard, onSelect, onUpdate, onDelete }: FlashcardIte
   };
 
   return (
-    <div className="flex items-start p-4 border-b border-gray-200 hover:bg-gray-50">
+    <div className="flex items-start p-4 border-b border-gray-200 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
       <div className="flex items-center w-12">
         <Checkbox
           id={`select-${flashcard.id}`}
@@ -178,12 +187,12 @@ const FlashcardItem = ({ flashcard, onSelect, onUpdate, onDelete }: FlashcardIte
       <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Front fiszki */}
         <div className="overflow-hidden">
-          <div className="text-sm">{truncateText(flashcard.front)}</div>
+          <div className="text-sm text-gray-900 dark:text-gray-100">{truncateText(flashcard.front)}</div>
         </div>
 
         {/* Tył fiszki */}
         <div className="overflow-hidden">
-          <div className="text-sm">{truncateText(flashcard.back)}</div>
+          <div className="text-sm text-gray-900 dark:text-gray-100">{truncateText(flashcard.back)}</div>
         </div>
 
         {/* Status */}

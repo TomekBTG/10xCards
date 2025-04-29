@@ -76,12 +76,12 @@ export default function QuizApp() {
   if (state.error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
-        <div className="p-4 border border-destructive rounded-md bg-destructive/10 text-center">
-          <h2 className="text-lg font-semibold text-destructive mb-2">Wystąpił błąd</h2>
-          <p className="mb-4">{state.error}</p>
+        <div className="p-4 border border-red-400 dark:border-red-800 rounded-md bg-red-100 dark:bg-red-900/30 text-center">
+          <h2 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">Wystąpił błąd</h2>
+          <p className="mb-4 text-red-600 dark:text-red-400">{state.error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
           >
             Spróbuj ponownie
           </button>
@@ -94,16 +94,16 @@ export default function QuizApp() {
   if (quizStarted && state.cards.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
-        <div className="p-6 border rounded-md bg-muted text-center max-w-md mx-auto">
-          <h2 className="text-lg font-semibold mb-2">Brak fiszek do powtórki</h2>
-          <p className="mb-4">
+        <div className="p-6 border border-gray-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 text-center max-w-md mx-auto">
+          <h2 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">Brak fiszek do powtórki</h2>
+          <p className="mb-4 text-gray-600 dark:text-gray-400">
             {sessionOptions.categoryId || sessionOptions.difficulty
               ? "Nie znaleziono fiszek spełniających wybrane parametry."
               : "Utwórz fiszki, aby rozpocząć sesję powtórkową."}
           </p>
           <button
             onClick={() => setQuizStarted(false)}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 inline-block"
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
           >
             Wróć do konfiguracji
           </button>
@@ -132,19 +132,21 @@ export default function QuizApp() {
 
   // Etap 2: Renderowanie aktywnego quizu
   return (
-    <div className="flex flex-col w-full max-w-2xl mx-auto">
-      <div className="flex justify-between items-center mb-4">
-        <div className="text-sm text-muted-foreground">
+    <div className="flex flex-col w-full">
+      <div className="flex justify-between items-center mb-6 px-4 py-3 bg-white dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-zinc-800">
+        <div className="text-sm text-gray-600 dark:text-gray-400">
           Karta {state.currentIndex + 1} z {state.cards.length}
         </div>
         <QuizTimer seconds={seconds} />
       </div>
 
       {currentCard && (
-        <>
+        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-zinc-800 overflow-hidden">
           <QuizCard card={currentCard} />
-          <QuizNavigation revealed={currentCard.revealed} onReveal={revealAnswer} onMark={handleMarkAndNext} />
-        </>
+          <div className="border-t border-gray-200 dark:border-zinc-800 p-4">
+            <QuizNavigation revealed={currentCard.revealed} onReveal={revealAnswer} onMark={handleMarkAndNext} />
+          </div>
+        </div>
       )}
     </div>
   );

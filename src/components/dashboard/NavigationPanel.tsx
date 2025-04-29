@@ -1,57 +1,60 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import type { NavButtonDTO } from "@/types/dashboard";
+import React from 'react';
 
-export default function NavigationPanel() {
-  const [navButtons] = useState<NavButtonDTO[]>([
+interface NavItem {
+  title: string;
+  description: string;
+  icon: string;
+  path: string;
+}
+
+const NavigationPanel: React.FC = () => {
+  const navItems: NavItem[] = [
     {
-      label: "Generuj nowe fiszki",
-      route: "/generate",
-      icon: "✨",
+      title: 'Generuj fiszki',
+      description: 'Utwórz nowe fiszki za pomocą AI',
+      icon: '🤖',
+      path: '/generate'
     },
     {
-      label: "Dodaj własne fiszki",
-      route: "/flashcards/add",
-      icon: "✏️",
+      title: 'Dodaj fiszki',
+      description: 'Dodaj własne fiszki ręcznie',
+      path: '/flashcards/add',
+      icon: '✏️'
     },
     {
-      label: "Przeglądaj fiszki",
-      route: "/library",
-      icon: "📚",
+      title: 'Biblioteka',
+      description: 'Przeglądaj swoją kolekcję fiszek',
+      path: '/library',
+      icon: '📚'
     },
     {
-      label: "Rozpocznij quiz",
-      route: "/quiz",
-      icon: "🧠",
-    },
-    {
-      label: "Statystyki i postępy",
-      route: "/stats",
-      icon: "📊",
-    },
-  ]);
+      title: 'Quiz',
+      description: 'Sprawdź swoją wiedzę',
+      path: '/quiz',
+      icon: '🧠'
+    }
+  ];
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Szybka nawigacja</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {navButtons.map((button, index) => (
-            <a key={index} href={button.route} className="no-underline">
-              <Button
-                variant="outline"
-                className="w-full h-auto py-6 flex flex-col items-center justify-center gap-2 text-lg"
-              >
-                <span className="text-2xl">{button.icon}</span>
-                {button.label}
-              </Button>
-            </a>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <div>
+      <h2 className="text-xl font-semibold mb-5 text-white">Nawigacja</h2>
+      <div className="grid gap-4">
+        {navItems.map((item) => (
+          <a 
+            key={item.path}
+            href={item.path}
+            className="flex items-start gap-4 p-4 rounded-lg bg-zinc-800/30 border border-zinc-800/50 hover:bg-zinc-800/70 transition-all duration-300"
+          >
+            <div className="flex-shrink-0 text-3xl">{item.icon}</div>
+            <div>
+              <h3 className="font-medium text-white">{item.title}</h3>
+              <p className="text-sm text-zinc-400">{item.description}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
   );
-}
+};
+
+export default NavigationPanel;

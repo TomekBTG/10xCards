@@ -1,23 +1,7 @@
 ---
-import Layout from "../layouts/Layout.astro";
----
+export const prerender = false;
 
-<Layout title="Strona główna">
-  <main class="container mx-auto p-4">
-    <h1 class="text-3xl font-bold mb-6">10xCards - Twoje inteligentne fiszki</h1>
-    <p class="text-lg mb-4">Witaj w aplikacji do tworzenia i nauki z fiszek!</p>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-      <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-semibold mb-3">Generowanie fiszek</h2>
-        <p class="mb-4">Utwórz nowe fiszki z pomocą sztucznej inteligencji.</p>
-        <a href="/generate" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded">
-          Generuj fiszki
-        </a>
-      </div>
-      <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-semibold mb-3">O aplikacji</h2>
-        <p>10xCards to nowoczesne narzędzie wykorzystujące AI do tworzenia efektywnych fiszek edukacyjnych.</p>
-      </div>
-    </div>
-  </main>
-</Layout>
+// Przekierowanie na stronę dashboard
+const redirectUrl = '/dashboard';
+return Astro.redirect(redirectUrl);
+--- 

@@ -4,6 +4,7 @@ import type {
   FlashcardDTO,
   FlashcardStatus,
   UpdateFlashcardCommand,
+  FlashcardsListResponseDTO,
 } from "../../types";
 import { createClient } from "@supabase/supabase-js";
 
@@ -135,6 +136,88 @@ export const flashcardService = {
     } catch (error) {
       console.error(`Error updating flashcard (id: ${id}):`, error);
       throw error instanceof Error ? error : new Error("Wystąpił nieoczekiwany błąd podczas aktualizacji fiszki");
+    }
+  },
+
+  /**
+   * Pobiera fiszki z opcjonalnym filtrowaniem i paginacją
+   * @param options - Opcje filtrowania i paginacji
+   * @returns Odpowiedź zawierająca listę fiszek i informacje o paginacji
+   */
+  async getFlashcards(options?: {
+    status?: FlashcardStatus;
+    categoryId?: string;
+    difficulty?: string;
+    createdBefore?: string;
+    createdAfter?: string;
+    sort?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<FlashcardsListResponseDTO> {
+    try {
+      const {
+        status,
+        categoryId,
+        difficulty,
+        createdBefore,
+        createdAfter,
+        sort = "created_at.desc",
+        page = 1,
+        limit = 20,
+      } = options || {};
+
+      // Obliczanie offsetu na podstawie strony i limitu
+      const offset = (page - 1) * limit;
+
+      // Budowanie zapytania
+      let query = supabase.from("flashcards").select("*", { count: "exact" });
+
+      // Zastosowanie filtrów
+      if (status) {
+        query = query.eq("status", status);
+      }
+
+      if (categoryId) {
+        query = query.eq("category_id", categoryId);
+      }
+
+      if (difficulty) {
+        query = query.eq("difficulty", difficulty);
+      }
+
+      if (createdBefore) {
+        query = query.lte("created_at", createdBefore);
+      }
+
+      if (createdAfter) {
+        query = query.gte("created_at", createdAfter);
+      }
+
+      // Zastosowanie sortowania
+      const [sortField, sortOrder] = sort.split(".");
+      if (sortField && sortOrder) {
+        query = query.order(sortField, { ascending: sortOrder === "asc" });
+      }
+
+      // Zastosowanie paginacji
+      query = query.range(offset, offset + limit - 1);
+
+      // Wykonanie zapytania
+      const { data: flashcards, error, count } = await query;
+
+      if (error) {
+        throw new Error(`Błąd bazy danych: ${error.message}`);
+      }
+
+      return {
+        data: flashcards || [],
+        pagination: { page, limit, total: count || 0 },
+      };
+    } catch (error) {
+      console.error("Error fetching flashcards:", error);
+      throw error instanceof Error
+        ? error
+        : new Error("Wystąpił nieoczekiwany błąd podczas pobierania fiszek");
     }
   },
 
