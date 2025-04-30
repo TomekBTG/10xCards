@@ -206,22 +206,22 @@ export function FlashcardsReview({ flashcards, generationLog, onReset }: Flashca
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-4 mb-6 text-center">
-            <div className="p-4 bg-green-100 rounded-md">
-              <p className="text-2xl font-bold text-green-700">{acceptedCount}</p>
-              <p className="text-green-700">Zaakceptowane</p>
+            <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded-md">
+              <p className="text-2xl font-bold text-green-700 dark:text-green-400">{acceptedCount}</p>
+              <p className="text-green-700 dark:text-green-400">Zaakceptowane</p>
             </div>
-            <div className="p-4 bg-yellow-100 rounded-md">
-              <p className="text-2xl font-bold text-yellow-700">{pendingCount}</p>
-              <p className="text-yellow-700">Oczekujące</p>
+            <div className="p-4 bg-yellow-100 dark:bg-yellow-900/30 rounded-md">
+              <p className="text-2xl font-bold text-yellow-700 dark:text-yellow-400">{pendingCount}</p>
+              <p className="text-yellow-700 dark:text-yellow-400">Oczekujące</p>
             </div>
-            <div className="p-4 bg-red-100 rounded-md">
-              <p className="text-2xl font-bold text-red-700">{rejectedCount}</p>
-              <p className="text-red-700">Odrzucone</p>
+            <div className="p-4 bg-red-100 dark:bg-red-900/30 rounded-md">
+              <p className="text-2xl font-bold text-red-700 dark:text-red-400">{rejectedCount}</p>
+              <p className="text-red-700 dark:text-red-400">Odrzucone</p>
             </div>
           </div>
 
           {generationLog && (
-            <div className="mb-6 p-4 bg-gray-100 rounded-md">
+            <div className="mb-6 p-4 bg-gray-100 dark:bg-gray-800/50 rounded-md">
               <h3 className="font-medium mb-2">Informacje o generowaniu:</h3>
               <ul className="text-sm space-y-1">
                 <li>Wygenerowano: {generationLog.number_generated} fiszek</li>
@@ -233,11 +233,11 @@ export function FlashcardsReview({ flashcards, generationLog, onReset }: Flashca
           )}
 
           {saveError && (
-            <div className="mb-6 p-4 bg-red-100 border border-red-300 rounded-md text-red-700">{saveError}</div>
+            <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-md text-red-700 dark:text-red-400">{saveError}</div>
           )}
 
           {saveSuccess && (
-            <div className="mb-6 p-4 bg-green-100 border border-green-300 rounded-md text-green-700">
+            <div className="mb-6 p-4 bg-green-100 dark:bg-green-900/20 border border-green-300 dark:border-green-800 rounded-md text-green-700 dark:text-green-400">
               Fiszki zostały pomyślnie zapisane!
             </div>
           )}
@@ -291,14 +291,14 @@ export function FlashcardsReview({ flashcards, generationLog, onReset }: Flashca
               Resetuj filtry
             </Button>
 
-            <div className="flex-grow text-right text-sm text-gray-500 self-center">
+            <div className="flex-grow text-right text-sm text-gray-500 dark:text-gray-400 self-center">
               Wyświetlono {displayedCardsCount} z {totalCardsCount} fiszek
             </div>
           </div>
 
           {displayedCardsCount === 0 ? (
-            <div className="text-center p-8 bg-gray-50 rounded-md">
-              <p className="text-gray-500">Nie znaleziono fiszek spełniających kryteria filtrowania.</p>
+            <div className="text-center p-8 bg-gray-50 dark:bg-gray-800/50 rounded-md">
+              <p className="text-gray-500 dark:text-gray-400">Nie znaleziono fiszek spełniających kryteria filtrowania.</p>
               <Button variant="link" onClick={handleResetFilters}>
                 Resetuj filtry
               </Button>
@@ -314,6 +314,7 @@ export function FlashcardsReview({ flashcards, generationLog, onReset }: Flashca
                   onEdit={(front, back, categoryId, categoryName, difficulty) =>
                     handleEdit(card.id, front, back, categoryId, categoryName, difficulty)
                   }
+                  onChangeStatus={handleStatusChange}
                 />
               ))}
             </div>

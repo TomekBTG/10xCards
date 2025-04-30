@@ -30,7 +30,7 @@ export function FlashcardBackContent({ value, onChange, error }: FlashcardBackCo
         <Label htmlFor="back-content" className="text-sm font-medium">
           Tylna strona (odpowiedź)
         </Label>
-        <span className={`text-xs ${isLimitExceeded ? "text-red-500" : "text-gray-500"}`}>
+        <span className={`text-xs ${isLimitExceeded ? "text-red-500 dark:text-red-400" : "text-gray-500 dark:text-gray-400"}`}>
           {remainingChars} znaków pozostało
         </span>
       </div>

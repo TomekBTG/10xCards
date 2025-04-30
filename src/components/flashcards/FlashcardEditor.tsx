@@ -20,6 +20,7 @@ interface FormFlashcard {
     front?: string;
     back?: string;
     category?: string;
+    difficulty?: string;
     general?: string;
   };
 }
@@ -93,7 +94,7 @@ export function FlashcardEditor({
       <CardContent className="space-y-4">
         {/* Ogólny błąd fiszki */}
         {flashcard.errors?.general && (
-          <div className="p-3 bg-red-50 text-red-800 rounded-md text-sm">{flashcard.errors.general}</div>
+          <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-400 rounded-md text-sm">{flashcard.errors.general}</div>
         )}
 
         {/* Treść przedniej strony */}
@@ -113,7 +114,11 @@ export function FlashcardEditor({
           />
 
           {/* Selektor trudności */}
-          <FlashcardDifficultySelector value={flashcard.difficulty} onChange={updateDifficulty} />
+          <FlashcardDifficultySelector 
+            value={flashcard.difficulty} 
+            onChange={updateDifficulty} 
+            error={flashcard.errors?.difficulty}
+          />
         </div>
       </CardContent>
     </Card>

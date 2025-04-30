@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 interface FlashcardDifficultySelectorProps {
   value: "easy" | "medium" | "hard" | null;
   onChange: (value: "easy" | "medium" | "hard" | null) => void;
+  error?: string;
 }
 
 // Mapowanie trudności na etykiety
@@ -14,7 +15,7 @@ const difficultyLabels = {
   hard: "Trudny",
 };
 
-export function FlashcardDifficultySelector({ value, onChange }: FlashcardDifficultySelectorProps) {
+export function FlashcardDifficultySelector({ value, onChange, error }: FlashcardDifficultySelectorProps) {
   // Obsługa zmiany wartości
   const handleChange = useCallback(
     (selectedValue: string) => {
@@ -35,7 +36,7 @@ export function FlashcardDifficultySelector({ value, onChange }: FlashcardDiffic
         <div className="h-7"></div>
       </div>
       <Select value={value || "none"} onValueChange={handleChange}>
-        <SelectTrigger>
+        <SelectTrigger className={error ? "border-red-500" : ""}>
           <SelectValue placeholder="Wybierz poziom trudności" />
         </SelectTrigger>
         <SelectContent>
@@ -62,6 +63,7 @@ export function FlashcardDifficultySelector({ value, onChange }: FlashcardDiffic
           </SelectGroup>
         </SelectContent>
       </Select>
+      {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
     </div>
   );
 }

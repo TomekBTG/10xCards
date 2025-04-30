@@ -20,6 +20,7 @@ interface FormFlashcard {
     front?: string;
     back?: string;
     category?: string;
+    difficulty?: string;
     general?: string;
   };
 }
@@ -31,6 +32,7 @@ interface AddFlashcardsFormState {
   submitError: string | null;
   successMessage: string | null;
   showSavedFlashcards: boolean;
+  showValidationErrors: boolean;
 }
 
 // Payload do zapisania fiszek
@@ -62,7 +64,46 @@ const useAddFlashcardsForm = () => {
     submitError: null,
     successMessage: null,
     showSavedFlashcards: false,
+    showValidationErrors: false,
   });
+
+  // Waliduje wszystkie fiszki
+  const validateFlashcards = useCallback((flashcards: FormFlashcard[]): FormFlashcard[] => {
+    return flashcards.map((flashcard) => {
+      const errors: FormFlashcard["errors"] = {};
+
+      // Walidacja front (wymagane, max 200 znaków)
+      if (!flashcard.front.trim()) {
+        errors.front = "Treść przedniej strony jest wymagana";
+      } else if (flashcard.front.length > 200) {
+        errors.front = "Maksymalna długość to 200 znaków";
+      }
+
+      // Walidacja back (wymagane, max 500 znaków)
+      if (!flashcard.back.trim()) {
+        errors.back = "Treść tylnej strony jest wymagana";
+      } else if (flashcard.back.length > 500) {
+        errors.back = "Maksymalna długość to 500 znaków";
+      }
+
+      // Walidacja kategorii
+      if (!flashcard.category_id && (!flashcard.category_name || !flashcard.category_name.trim())) {
+        errors.category = "Kategoria jest wymagana";
+      }
+
+      // Walidacja poziomu trudności
+      if (!flashcard.difficulty) {
+        errors.difficulty = "Poziom trudności jest wymagany";
+      }
+
+      return { ...flashcard, errors };
+    });
+  }, []);
+
+  // Sprawdza, czy wszystkie fiszki są poprawne
+  const areAllFlashcardsValid = useCallback((flashcards: FormFlashcard[]): boolean => {
+    return flashcards.every((flashcard) => !flashcard.errors || Object.keys(flashcard.errors).length === 0);
+  }, []);
 
   // Dodaje nową pustą fiszkę
   const addFlashcard = useCallback(() => {
@@ -96,45 +137,22 @@ const useAddFlashcardsForm = () => {
       const updatedFlashcards = [...prevState.flashcards];
       updatedFlashcards[index] = updatedFlashcard;
 
+      // Jeśli poprawiono błędy, usuń komunikaty błędów dla tej fiszki
+      if (prevState.showValidationErrors) {
+        const revalidatedFlashcard = validateFlashcards([updatedFlashcard])[0];
+        if (areAllFlashcardsValid([revalidatedFlashcard])) {
+          updatedFlashcard.errors = {};
+        } else {
+          updatedFlashcard.errors = revalidatedFlashcard.errors;
+        }
+      }
+
       return {
         ...prevState,
         flashcards: updatedFlashcards,
       };
     });
-  }, []);
-
-  // Waliduje wszystkie fiszki
-  const validateFlashcards = useCallback((flashcards: FormFlashcard[]): FormFlashcard[] => {
-    return flashcards.map((flashcard) => {
-      const errors: FormFlashcard["errors"] = {};
-
-      // Walidacja front (wymagane, max 200 znaków)
-      if (!flashcard.front.trim()) {
-        errors.front = "Treść przedniej strony jest wymagana";
-      } else if (flashcard.front.length > 200) {
-        errors.front = "Maksymalna długość to 200 znaków";
-      }
-
-      // Walidacja back (wymagane, max 500 znaków)
-      if (!flashcard.back.trim()) {
-        errors.back = "Treść tylnej strony jest wymagana";
-      } else if (flashcard.back.length > 500) {
-        errors.back = "Maksymalna długość to 500 znaków";
-      }
-
-      // Walidacja kategorii - jeśli podano nazwę kategorii ale brak ID
-      if (!flashcard.category_id && flashcard.category_name && !flashcard.category_name.trim()) {
-        errors.category = "Nazwa kategorii jest wymagana";
-      }
-
-      return { ...flashcard, errors };
-    });
-  }, []);
-
-  // Sprawdza, czy wszystkie fiszki są poprawne
-  const areAllFlashcardsValid = useCallback((flashcards: FormFlashcard[]): boolean => {
-    return flashcards.every((flashcard) => !flashcard.errors || Object.keys(flashcard.errors).length === 0);
-  }, []);
+  }, [validateFlashcards, areAllFlashcardsValid]);
 
   // Przełącza widok zapisanych fiszek
   const toggleSavedFlashcards = useCallback(() => {
@@ -149,7 +167,11 @@ const useAddFlashcardsForm = () => {
     // Walidacja
     const validatedFlashcards = validateFlashcards(formState.flashcards);
 
-    setFormState((prev) => ({ ...prev, flashcards: validatedFlashcards }));
+    setFormState((prev) => ({ 
+      ...prev, 
+      flashcards: validatedFlashcards,
+      showValidationErrors: true 
+    }));
 
     if (!areAllFlashcardsValid(validatedFlashcards)) {
       setFormState((prev) => ({
@@ -219,6 +241,7 @@ const useAddFlashcardsForm = () => {
           submitError: `Zapisano ${responseData.data.length} z ${formState.flashcards.length} fiszek`,
           successMessage: null,
           showSavedFlashcards: false,
+          showValidationErrors: false,
         });
 
         toast.warning(`Zapisano częściowo: ${responseData.data.length} z ${formState.flashcards.length} fiszek.`);
@@ -230,6 +253,7 @@ const useAddFlashcardsForm = () => {
           submitError: null,
           successMessage: `Zapisano ${responseData.data.length} fiszek`,
           showSavedFlashcards: false,
+          showValidationErrors: false,
         });
 
         toast.success(`Zapisano pomyślnie ${responseData.data.length} fiszek!`);
@@ -255,6 +279,7 @@ const useAddFlashcardsForm = () => {
       submitError: null,
       successMessage: null,
       showSavedFlashcards: false,
+      showValidationErrors: false,
     });
   }, []);
 

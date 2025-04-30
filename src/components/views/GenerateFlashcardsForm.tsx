@@ -35,6 +35,7 @@ export function GenerateFlashcardsForm({
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [showCategoryError, setShowCategoryError] = useState(false);
   const { generateFlashcards } = useGenerateFlashcards();
 
   // Pobranie kategorii przy montowaniu komponentu
@@ -58,6 +59,9 @@ export function GenerateFlashcardsForm({
   const isTextTooShort = text.length > 0 && text.length < 500;
   const isTextTooLong = text.length > 10000;
   const isValidInput = text.length >= 500 && text.length <= 10000;
+  
+  // Validation for category selection
+  const isCategoryValid = isAddingCategory ? !!newCategoryName.trim() : !!selectedCategoryId;
 
   // Calculate remaining characters
   const minChars = 500;
@@ -90,7 +94,9 @@ export function GenerateFlashcardsForm({
   // Form submission handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setShowCategoryError(true);
 
+    // Validate text length
     if (!isValidInput) {
       if (isTextTooShort) {
         toast.error("Tekst jest za krótki", {
@@ -101,6 +107,16 @@ export function GenerateFlashcardsForm({
           description: `Maksymalny dozwolony rozmiar to ${maxChars} znaków.`,
         });
       }
+      return;
+    }
+
+    // Validate category selection
+    if (!isCategoryValid) {
+      toast.error("Wybór kategorii jest wymagany", {
+        description: isAddingCategory 
+          ? "Wprowadź nazwę nowej kategorii" 
+          : "Wybierz kategorię z listy"
+      });
       return;
     }
 
@@ -146,6 +162,7 @@ export function GenerateFlashcardsForm({
   // Obsługa przełączania między wyborem kategorii a dodawaniem nowej
   const toggleAddCategory = () => {
     setIsAddingCategory(!isAddingCategory);
+    setShowCategoryError(false);
     if (!isAddingCategory) {
       setSelectedCategoryId(null);
     } else {
@@ -165,7 +182,7 @@ export function GenerateFlashcardsForm({
             {/* Wybór kategorii */}
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <Label htmlFor="category-select">Kategoria</Label>
+                <Label htmlFor="category-select">Kategoria <span className="text-red-500">*</span></Label>
                 <Button type="button" variant="ghost" onClick={toggleAddCategory} className="text-sm h-auto py-1">
                   {isAddingCategory ? "Wybierz istniejącą" : "Dodaj nową kategorię"}
                 </Button>
@@ -173,34 +190,52 @@ export function GenerateFlashcardsForm({
 
               {isAddingCategory ? (
                 <div className="space-y-2">
-                  <Label htmlFor="new-category">Nazwa nowej kategorii</Label>
+                  <Label htmlFor="new-category">Nazwa nowej kategorii <span className="text-red-500">*</span></Label>
                   <Input
                     id="new-category"
                     value={newCategoryName}
-                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    onChange={(e) => {
+                      setNewCategoryName(e.target.value);
+                      if (e.target.value.trim()) {
+                        setShowCategoryError(false);
+                      }
+                    }}
                     placeholder="Wprowadź nazwę nowej kategorii"
                     disabled={loading}
                   />
+                  {showCategoryError && isAddingCategory && !newCategoryName.trim() && (
+                    <p className="text-sm text-red-500">Nazwa kategorii jest wymagana</p>
+                  )}
                 </div>
               ) : (
-                <Select
-                  value={selectedCategoryId || ""}
-                  onValueChange={(value) => setSelectedCategoryId(value || null)}
-                  disabled={loading}
-                >
-                  <SelectTrigger className="w-full" id="category-select">
-                    <SelectValue placeholder="Wybierz kategorię" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name} ({category.count})
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                <>
+                  <Select
+                    value={selectedCategoryId || ""}
+                    onValueChange={(value) => {
+                      setSelectedCategoryId(value || null);
+                      if (value) {
+                        setShowCategoryError(false);
+                      }
+                    }}
+                    disabled={loading}
+                  >
+                    <SelectTrigger className="w-full" id="category-select">
+                      <SelectValue placeholder="Wybierz kategorię" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name} ({category.count})
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  {showCategoryError && !isAddingCategory && !selectedCategoryId && (
+                    <p className="text-sm text-red-500">Wybór kategorii jest wymagany</p>
+                  )}
+                </>
               )}
             </div>
 
@@ -246,7 +281,7 @@ export function GenerateFlashcardsForm({
         </CardContent>
 
         <CardFooter className="flex justify-end">
-          <Button type="submit" disabled={!isValidInput || loading}>
+          <Button type="submit" disabled={!isValidInput || !isCategoryValid || loading}>
             {loading ? (
               <>
                 <svg
