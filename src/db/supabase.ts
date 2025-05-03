@@ -1,12 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "./database.types";
-
-// Pobierz zmienne środowiskowe
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_KEY;
-
-// Utwórz klienta Supabase
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+import { supabaseClient } from "./supabase.client";
 
 /**
  * Sprawdza, czy użytkownik jest zalogowany
@@ -14,7 +6,7 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
  */
 export const isAuthenticated = async (): Promise<boolean> => {
   try {
-    const { data, error } = await supabase.auth.getSession();
+    const { data, error } = await supabaseClient.auth.getSession();
 
     if (error) {
       console.error("Error during auth check:", error.message);
@@ -29,6 +21,7 @@ export const isAuthenticated = async (): Promise<boolean> => {
       console.log("Auth running in browser environment");
 
       // Sprawdź localStorage (gdzie Supabase przechowuje token)
+      const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
       const storageKey = `sb-${supabaseUrl.split("//")[1].split(".")[0]}-auth-token`;
       const storedSession = localStorage.getItem(storageKey);
 
@@ -71,7 +64,7 @@ export const isAuthenticated = async (): Promise<boolean> => {
 export const getCurrentUser = async () => {
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await supabaseClient.auth.getUser();
   return user;
 };
 
@@ -80,7 +73,7 @@ export const getCurrentUser = async () => {
  * @returns Promise<void>
  */
 export const signOut = async (): Promise<void> => {
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
 
   // Usuwanie ciasteczka z tokenem sesji (ustawianie wygasłej daty)
   if (typeof document !== "undefined") {

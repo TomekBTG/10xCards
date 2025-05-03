@@ -1,5 +1,4 @@
 import { supabaseClient } from "../../db/supabase.client";
-import { isAuthenticated } from "../../db/supabase";
 import type { DeleteAccountCommand, UpdatePasswordCommand } from "../../types/auth";
 
 /**
@@ -41,8 +40,8 @@ export function useProfileActions() {
 
       // Bezpośrednie wywołanie Supabase - mechanizm awaryjny
       // Sprawdź czy użytkownik jest zalogowany
-      await supabaseClient.auth.getSession();
-      const isLoggedIn = await isAuthenticated();
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      const isLoggedIn = !!sessionData.session && !!sessionData.session.user;
       
       if (!isLoggedIn) {
         return {
@@ -76,12 +75,12 @@ export function useProfileActions() {
       }
 
       // Update the password
-      const { error } = await supabaseClient.auth.updateUser({
+      const { error: updateError } = await supabaseClient.auth.updateUser({
         password: command.new_password,
       });
 
-      if (error) {
-        throw error;
+      if (updateError) {
+        throw updateError;
       }
 
       return {
@@ -132,8 +131,8 @@ export function useProfileActions() {
 
       // Bezpośrednie wywołanie Supabase - mechanizm awaryjny
       // Sprawdź czy użytkownik jest zalogowany
-      await supabaseClient.auth.getSession();
-      const isLoggedIn = await isAuthenticated();
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      const isLoggedIn = !!sessionData.session && !!sessionData.session.user;
       
       if (!isLoggedIn) {
         return {
@@ -178,10 +177,10 @@ export function useProfileActions() {
       }
 
       // Delete the user account
-      const { error } = await supabaseClient.auth.admin.deleteUser(userData.user.id);
+      const { error: deleteError } = await supabaseClient.auth.admin.deleteUser(userData.user.id);
 
-      if (error) {
-        throw error;
+      if (deleteError) {
+        throw deleteError;
       }
 
       // Sign out the user after successful deletion

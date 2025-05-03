@@ -6,12 +6,7 @@ import type {
   UpdateFlashcardCommand,
   FlashcardsListResponseDTO,
 } from "../../types";
-import { createClient } from "@supabase/supabase-js";
-
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { supabaseClient } from "../../db/supabase.client";
 
 /**
  * Serwis do zarządzania fiszkami
@@ -53,12 +48,21 @@ export const flashcardService = {
    */
   async saveFlashcards(flashcards: CreateFlashcardCommand[]): Promise<FlashcardDTO[]> {
     try {
+      // Pobieramy aktualnego użytkownika
+      const { data: userData } = await supabaseClient.auth.getUser();
+      const userId = userData.user?.id;
+
+      if (!userId) {
+        throw new Error("Nie znaleziono ID użytkownika. Proszę zalogować się ponownie.");
+      }
+
       // Zapisz fiszki w bazie danych przy użyciu Supabase
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from("flashcards")
         .insert(
           flashcards.map((f) => ({
             ...f,
+            user_id: userId,
             status: "accepted", // Wszystkie zapisywane fiszki są akceptowane
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
@@ -170,7 +174,7 @@ export const flashcardService = {
       const offset = (page - 1) * limit;
 
       // Budowanie zapytania
-      let query = supabase.from("flashcards").select("*", { count: "exact" });
+      let query = supabaseClient.from("flashcards").select("*", { count: "exact" });
 
       // Zastosowanie filtrów
       if (status) {
@@ -227,7 +231,7 @@ export const flashcardService = {
    */
   async getCategories(): Promise<FlashcardCategory[]> {
     try {
-      const { data, error } = await supabase.from("flashcards").select("category_id, category_name");
+      const { data, error } = await supabaseClient.from("flashcards").select("category_id, category_name");
 
       if (error) {
         throw error;

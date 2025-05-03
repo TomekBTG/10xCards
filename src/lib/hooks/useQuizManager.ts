@@ -9,7 +9,7 @@ import type {
   QuizSessionOptions,
 } from "../../types";
 import { useTimer } from "./useTimer";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseClient } from "../../db/supabase.client";
 import {
   getFlashcardsForQuiz,
   getFilteredFlashcards,
@@ -17,11 +17,6 @@ import {
   shuffleArray,
 } from "../services/quizService";
 import type { PostgrestError } from "@supabase/supabase-js";
-
-// Initialize the Supabase client
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Initial quiz state
 const initialState: QuizState = {
@@ -235,7 +230,7 @@ export function useQuizManager(): UseQuizManagerReturn {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const categoryData = await getFlashcardCategories(supabase);
+        const categoryData = await getFlashcardCategories(supabaseClient);
         setCategories(categoryData);
         dispatch({ type: "SET_CATEGORIES", payload: categoryData });
       } catch (error) {
@@ -282,9 +277,9 @@ export function useQuizManager(): UseQuizManagerReturn {
       // Pobierz fiszki z wybranymi parametrami
       let data: FlashcardDTO[];
       if (sessionOptions.categoryId || sessionOptions.difficulty || sessionOptions.limit) {
-        data = await getFilteredFlashcards(supabase, sessionOptions);
+        data = await getFilteredFlashcards(supabaseClient, sessionOptions);
       } else {
-        data = await getFlashcardsForQuiz(supabase);
+        data = await getFlashcardsForQuiz(supabaseClient);
       }
 
       // Zaktualizuj stan załadowanymi kartami

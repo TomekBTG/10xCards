@@ -105,9 +105,70 @@ Użytkownicy mają trudności z ręcznym tworzeniem wysokiej jakości fiszek edu
     - System umożliwia zmianę statusu fiszek (pojedynczo lub masowo).
     - Użytkownik może usuwać fiszki z biblioteki.
     - Interfejs pozwala na organizowanie fiszek w kategorie.
+- US-010
+  - Tytuł: Kontrola dostępu i zarządzanie uprawnieniami
+  - Opis: Jako system chcę kontrolować dostęp do różnych części aplikacji na podstawie stanu autoryzacji użytkownika, aby zapewnić bezpieczeństwo danych i odpowiednie doświadczenie użytkownika.
+  - Kryteria akceptacji:
+    - Strony wymagające autoryzacji (panel główny, generowanie fiszek, biblioteka fiszek, profil, ustawienia, quiz) są dostępne tylko dla zalogowanych użytkowników.
+    - Niezalogowani użytkownicy próbujący uzyskać dostęp do chronionych zasobów są automatycznie przekierowywani do strony logowania.
+    - Zalogowani użytkownicy nie mają dostępu do stron rejestracji, logowania i resetowania hasła.
+    - Próba dostępu zalogowanego użytkownika do stron dla gości skutkuje przekierowaniem do panelu głównego.
+    - System poprawnie weryfikuje i aktualizuje stan sesji użytkownika przy każdym żądaniu.
+    - Obsługa błędów autoryzacji jest realizowana w spójny i bezpieczny sposób.
 
 ## 6. Metryki sukcesu
 1. 75% fiszek generowanych przez AI jest akceptowanych przez użytkowników.
 2. Użytkownicy tworzą 75% fiszek z wykorzystaniem trybu AI.
 3. System rejestruje operacje generowania w bazie danych, co umożliwia analizę liczby wygenerowanych i odrzuconych fiszek.
 4. Średni czas interakcji użytkownika z procesem generowania i recenzji fiszek jest minimalny, co wskazuje na intuicyjność i prostotę interfejsu. 
+
+## 7. Uprawnienia użytkowników
+### 7.1. Użytkownik zalogowany
+- Posiada dostęp do wszystkich funkcjonalności aplikacji, w tym:
+  - Panel główny (`/dashboard`) - zarządzanie swoim kontem i dostęp do statystyk.
+  - Generowanie fiszek (`/generate`) - korzystanie z funkcji AI do tworzenia fiszek.
+  - Biblioteka fiszek (`/library`) - przeglądanie i zarządzanie swoimi fiszkami.
+  - Fiszki (`/flashcards`) - tworzenie, edytowanie i usuwanie własnych fiszek.
+  - Profil (`/profile`) - zarządzanie danymi osobowymi i preferencjami.
+  - Ustawienia (`/settings`) - konfiguracja konta i aplikacji.
+  - Quiz (`/quiz`) - przeprowadzanie sesji powtórkowych na podstawie własnych fiszek.
+- Nie ma dostępu do:
+  - Strony logowania (`/login`) - przekierowany do panelu głównego.
+  - Strony rejestracji (`/register`) - przekierowany do panelu głównego.
+  - Strony resetowania hasła (`/reset-password`) - przekierowany do panelu głównego.
+
+### 7.2. Użytkownik niezalogowany
+- Posiada dostęp wyłącznie do:
+  - Strona główna (`/`) - informacje o aplikacji i jej funkcjonalnościach.
+  - Strona logowania (`/login`) - logowanie do systemu.
+  - Strona rejestracji (`/register`) - rejestracja nowego konta.
+  - Strona resetowania hasła (`/reset-password`) - odzyskiwanie dostępu do konta.
+- Nie ma dostępu do funkcjonalności wymagających autoryzacji:
+  - Panel główny (`/dashboard`)
+  - Generowanie fiszek (`/generate`)
+  - Biblioteka fiszek (`/library`)
+  - Fiszki (`/flashcards`)
+  - Profil (`/profile`)
+  - Ustawienia (`/settings`)
+  - Quiz (`/quiz`)
+
+### 7.3. Mechanizm autoryzacji
+- System wykorzystuje sesje do zarządzania dostępem użytkowników.
+- Autoryzacja oparta jest na tokenach JWT przechowywanych w ciasteczkach (`sb-auth-token`).
+- Middleware aplikacji weryfikuje stan autoryzacji dla każdego żądania.
+- Nieprawidłowe próby dostępu skutkują automatycznym przekierowaniem:
+  - Niezalogowani użytkownicy próbujący uzyskać dostęp do chronionych zasobów są przekierowywani do `/login`.
+  - Zalogowani użytkownicy próbujący uzyskać dostęp do stron tylko dla gości są przekierowywani do `/dashboard`.
+- System obsługuje błędy autoryzacji i zapewnia bezpieczne zarządzanie sesjami użytkowników.
+
+## 8. Wymagania bezpieczeństwa
+1. Autentykacja:
+   - Wszystkie dane uwierzytelniające są przesyłane za pomocą bezpiecznych połączeń HTTPS.
+   - Hasła nie są przechowywane w postaci jawnej, tylko jako skróty (hash) z wykorzystaniem silnych algorytmów kryptograficznych.
+   - System wykorzystuje mechanizm tokenów JWT do zarządzania sesjami.
+   - Tokeny autentykacji są przechowywane w bezpiecznych ciasteczkach HTTP-only.
+
+2. Autoryzacja:
+   - System implementuje mechanizm kontroli dostępu oparty na rolach (RBAC) i stanie autoryzacji.
+   - Dostęp do zasobów jest weryfikowany na poziomie middleware dla każdego żądania.
+   - Implementacja Row Level Security (RLS) w bazie danych zapewnia izolację danych między użytkownikami.

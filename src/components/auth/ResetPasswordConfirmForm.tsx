@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useToast } from "@/hooks/auth";
+import { useToast, mapErrorMessage } from "@/hooks/auth";
 import { PasswordInput } from "./PasswordInput";
 import { SubmitButton } from "./SubmitButton";
 import { ToastNotification } from "./ToastNotification";
-import { supabase } from "@/db/supabase";
-import { mapErrorMessage } from "@/hooks/auth";
+import { supabaseClient } from "@/db/supabase.client";
 
 interface ResetPasswordConfirmFormState {
   password: string;
@@ -92,7 +91,7 @@ export function ResetPasswordConfirmForm() {
     }));
 
     try {
-      const { error } = await supabase.auth.updateUser({
+      const { error } = await supabaseClient.auth.updateUser({
         password: formState.password,
       });
 

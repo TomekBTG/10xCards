@@ -1,5 +1,5 @@
 import { defineMiddleware } from "astro:middleware";
-import { supabase } from "@/db/supabase";
+import { supabaseClient } from "@/db/supabase.client";
 
 // Lista ścieżek wymagających autoryzacji
 // Tymczasowo usunąłem "/dashboard" z listy chronionych ścieżek
@@ -17,7 +17,7 @@ export const onRequest = defineMiddleware(async ({ locals, url, cookies, redirec
   try {
     // Inicjalizacja klienta Supabase w kontekście lokalnym
     // @ts-expect-error - dodajemy własność supabase do obiektu locals
-    locals.supabase = supabase;
+    locals.supabase = supabaseClient;
 
     // Ustawienie tokena sesji z ciasteczka, jeśli istnieje
     const authCookie = cookies.get(AUTH_COOKIE_NAME);
@@ -29,7 +29,7 @@ export const onRequest = defineMiddleware(async ({ locals, url, cookies, redirec
 
         if (tokenData && tokenData.access_token) {
           // Ustaw token sesji w kliencie Supabase
-          const { error } = await supabase.auth.setSession({
+          const { error } = await supabaseClient.auth.setSession({
             access_token: tokenData.access_token,
             refresh_token: tokenData.refresh_token,
           });
@@ -44,7 +44,7 @@ export const onRequest = defineMiddleware(async ({ locals, url, cookies, redirec
     }
 
     // Sprawdź, czy użytkownik jest zalogowany
-    const { data } = await supabase.auth.getSession();
+    const { data } = await supabaseClient.auth.getSession();
     const isUserAuthenticated = !!data.session;
 
     // Ustaw stan autoryzacji w lokalnym kontekście Astro używając type assertion

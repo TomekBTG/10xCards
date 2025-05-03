@@ -3,7 +3,7 @@ import { useToast, mapErrorMessage } from "@/hooks/auth";
 import { EmailInput } from "./EmailInput";
 import { SubmitButton } from "./SubmitButton";
 import { ToastNotification } from "./ToastNotification";
-import { supabase } from "@/db/supabase";
+import { supabaseClient } from "@/db/supabase.client";
 
 interface ResetPasswordFormState {
   email: string;
@@ -62,7 +62,7 @@ export function ResetPasswordForm() {
     }));
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(formState.email, {
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(formState.email, {
         redirectTo: `${window.location.origin}/reset-password-confirm`,
       });
 

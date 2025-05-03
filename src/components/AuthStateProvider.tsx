@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../db/supabase";
+import { supabaseClient } from "../db/supabase.client";
 
 // Interfejs dla stanu uwierzytelniania
 interface AuthState {
@@ -23,10 +23,8 @@ export function AuthStateProvider({ initialServerState }: AuthStateProviderProps
     const checkClientAuth = async () => {
       try {
         // Sprawdź sesję po stronie klienta
-        const { data } = await supabase.auth.getSession();
+        const { data } = await supabaseClient.auth.getSession();
         const isLoggedIn = !!data.session;
-
-        console.log("Client-side auth check:", isLoggedIn);
 
         // Aktualizuj tylko jeśli stan się zmienił
         if (isLoggedIn !== authState.isLoggedIn) {
@@ -65,8 +63,7 @@ export function AuthStateProvider({ initialServerState }: AuthStateProviderProps
     };
 
     // Ustaw nasłuchiwanie na zmiany stanu uwierzytelniania
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event, !!session);
+    const { data: authListener } = supabaseClient.auth.onAuthStateChange((event, session) => {
       const isLoggedIn = !!session;
 
       setAuthState({

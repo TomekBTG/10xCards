@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { type ToastProps, type ToastType } from "@/components/auth/ToastNotification";
-import { supabase } from "@/db/supabase";
+import { supabaseClient } from "@/db/supabase.client";
 
 /**
  * Hook for managing toast notifications
@@ -108,7 +108,7 @@ export function useLogin() {
         password: formState.password,
       };
 
-      const { data, error } = await supabase.auth.signInWithPassword(credentials);
+      const { data, error } = await supabaseClient.auth.signInWithPassword(credentials);
 
       if (error) {
         throw new Error(error.message);
@@ -259,7 +259,7 @@ export function useRegister() {
         password: formState.password,
       };
 
-      const { error } = await supabase.auth.signUp(credentials);
+      const { error } = await supabaseClient.auth.signUp(credentials);
 
       if (error) {
         throw new Error(error.message);
