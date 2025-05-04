@@ -11,6 +11,16 @@
 - **AI Integration**: Openrouter.ai for generating flashcards using various artificial intelligence models
 - **CI/CD & Hosting**: GitHub Actions for CI/CD pipelines and DigitalOcean for hosting
 
+## Testing Stack
+
+- **Unit Testing**: Vitest/Jest with React Testing Library for component and function testing
+- **E2E Testing**: Playwright/Cypress for automated end-to-end testing
+- **Component Testing**: Storybook for UI component testing and documentation
+- **API Mocking**: MSW (Mock Service Worker) for API mocking in tests
+- **Database Testing**: Supabase Testing Helpers for database integration testing
+- **Test Reporting**: Playwright Test Report for E2E test results visualization
+- **Accessibility Testing**: axe-core and Lighthouse for accessibility audits
+
 ## Getting Started Locally
 
 1. **Prerequisites**:
@@ -58,13 +68,27 @@ The project is currently in its early development stage (version 0.0.1). Continu
 ```md
 .
 ├── src/
-│   ├── layouts/    # Astro layouts
-│   ├── pages/      # Astro pages
-│   │   └── api/    # API endpoints
-│   ├── components/ # UI components (Astro & React)
-│   └── assets/     # Static assets
-├── public/         # Public assets
-``` 
+│   ├── layouts/          # Astro layouts
+│   ├── pages/            # Astro pages
+│   │   └── api/          # API endpoints
+│   ├── middleware/       # Astro middleware
+│   ├── db/               # Supabase clients and types
+│   ├── types.ts          # Shared types for backend and frontend
+│   ├── types/            # Additional type definitions
+│   ├── components/       # Client-side components
+│   │   ├── ui/           # Shadcn/ui components
+│   │   ├── auth/         # Authentication components
+│   │   ├── dashboard/    # Dashboard components
+│   │   ├── flashcards/   # Flashcard components
+│   │   ├── library/      # Library-related components
+│   │   ├── quiz/         # Quiz components
+│   │   ├── user/         # User profile components
+│   │   └── views/        # View components
+│   ├── hooks/            # Custom React hooks
+│   ├── lib/              # Services and helpers
+│   └── styles/           # Global styles
+├── public/               # Public assets
+```
 
 ## License
 
