@@ -36,8 +36,9 @@ export class BasePage {
   /**
    * Wykonuje zrzut ekranu i weryfikuje go
    */
-  async verifyScreenshot(name: string): Promise<void> {
-    await expect(this.page).toHaveScreenshot(`${name}.png`);
+  async verifyScreenshot(name: string, options?: any): Promise<void> {
+    console.log('verifyScreenshot', name, options);
+    await expect(this.page).toHaveScreenshot(`${name}.png`, options);
   }
 
   /**

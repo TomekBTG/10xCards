@@ -14,6 +14,7 @@ export default defineConfig({
     ['html', { open: 'never' }],
     ['list']
   ],
+  snapshotPathTemplate: '{testDir}/snapshots/{arg}{ext}',
   use: {
     // Base URL to use in actions like `await page.goto('/')`
     baseURL: 'http://localhost:3000',

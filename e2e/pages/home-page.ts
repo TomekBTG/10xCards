@@ -36,14 +36,12 @@ export class HomePage extends BasePage {
     
     // Sprawdź różne selektory, które mogą wskazywać na zalogowanego użytkownika
     const selectors = [
-      '[data-testid="user-menu"]',
-      '[data-testid="user-avatar"]',
-      '[data-testid="user-dropdown"]',
-      '[data-testid="logout-button"]',
-      // Linki lub elementy, które zazwyczaj są widoczne tylko dla zalogowanych użytkowników
-      'a[href="/dashboard"]',
-      'a[href="/library"]',
-      'a[href="/profile"]'
+      '[data-testid="konto-button"]',
+      'button:has-text("Konto")',
+      'a:has-text("Konto")',
+      '.nav-konto',
+      'a[href="/profile"]',
+      'a[href="/dashboard"]'
     ];
     
     // Sprawdź, czy którykolwiek z selektorów jest widoczny
@@ -61,7 +59,8 @@ export class HomePage extends BasePage {
     if (pageContent.includes("Wyloguj") || 
         pageContent.includes("wyloguj") || 
         pageContent.includes("logout") || 
-        pageContent.includes("Logout")) {
+        pageContent.includes("Logout") ||
+        pageContent.includes("Wyloguj się")) {
       console.log("Użytkownik zalogowany (wykryto tekst wylogowania)");
       return true;
     }
@@ -103,16 +102,48 @@ export class HomePage extends BasePage {
    * Otwiera menu użytkownika
    */
   async openUserMenu(): Promise<void> {
-    // Sprawdź różne możliwe selektory dla menu użytkownika
-    const selectors = [
-      '[data-testid="user-menu"]',
-      '[data-testid="user-avatar"]',
-      '.user-menu',
-      '.avatar',
-      'button:has-text("Profil")'
+    // Kliknij przycisk "Konto" aby otworzyć dropdown
+    const kontoSelectors = [
+      '[data-testid="konto-button"]',
+      'button:has-text("Konto")',
+      'a:has-text("Konto")',
+      '.nav-konto'
     ];
     
-    for (const selector of selectors) {
+    let kontoClicked = false;
+    for (const selector of kontoSelectors) {
+      const element = this.page.locator(selector);
+      const isVisible = await element.isVisible().catch(() => false);
+      if (isVisible) {
+        await this.click(element);
+        kontoClicked = true;
+        break;
+      }
+    }
+    
+    if (!kontoClicked) {
+      throw new Error('Nie znaleziono przycisku "Konto" do kliknięcia');
+    }
+    
+    // Daj czas na rozwinięcie menu
+    await this.page.waitForTimeout(500);
+  }
+
+  /**
+   * Otwiera profil użytkownika
+   */
+  async openUserProfile(): Promise<void> {
+    // Najpierw otwórz menu użytkownika
+    await this.openUserMenu();
+    
+    // Następnie kliknij na "Profil"
+    const profileSelectors = [
+      'a[href="/profile"]',
+      'a:has-text("Profil")',
+      '.block.px-4.py-2'
+    ];
+    
+    for (const selector of profileSelectors) {
       const element = this.page.locator(selector);
       const isVisible = await element.isVisible().catch(() => false);
       if (isVisible) {
@@ -121,7 +152,7 @@ export class HomePage extends BasePage {
       }
     }
     
-    throw new Error('Nie znaleziono menu użytkownika do kliknięcia');
+    throw new Error('Nie znaleziono opcji "Profil" w menu użytkownika');
   }
 
   /**
@@ -132,13 +163,12 @@ export class HomePage extends BasePage {
       try {
         await this.openUserMenu();
         
-        // Spróbuj kliknąć przycisk wylogowania
+        // Spróbuj kliknąć przycisk wylogowania na podstawie struktury HTML
         const logoutSelectors = [
-          '[data-testid="logout-button"]',
+          'button:has-text("Wyloguj się")',
+          'button.w-full.text-left.px-4.py-2',
           'button:has-text("Wyloguj")',
-          'a:has-text("Wyloguj")',
-          'button:has-text("Logout")',
-          'a:has-text("Logout")'
+          'button.text-left:has-text("Wyloguj")'
         ];
         
         for (const selector of logoutSelectors) {

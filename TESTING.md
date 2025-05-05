@@ -63,6 +63,9 @@ npm run test:e2e:debug
 
 # Uruchom generator testów Playwright
 npm run test:e2e:codegen
+
+# Screenshots
+npx playwright test e2e/navigation.spec.ts --update-snapshots
 ```
 
 ## Wytyczne dla testów jednostkowych
