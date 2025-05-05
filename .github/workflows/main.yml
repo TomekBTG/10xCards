@@ -28,7 +28,7 @@ jobs:
         run: npm ci --legacy-peer-deps
       
       - name: Install TypeScript
-        run: npm install typescript@latest --no-save
+        run: npm install typescript@latest --no-save --legacy-peer-deps
       
       - name: Lint
         run: npm run lint
@@ -59,7 +59,7 @@ jobs:
         run: npm ci --legacy-peer-deps
       
       - name: Install TypeScript
-        run: npm install typescript@latest --no-save
+        run: npm install typescript@latest --no-save --legacy-peer-deps
       
       - name: Run unit tests
         run: npm run test
@@ -97,7 +97,7 @@ jobs:
         run: npm ci --legacy-peer-deps
       
       - name: Install TypeScript
-        run: npm install typescript@latest --no-save
+        run: npm install typescript@latest --no-save --legacy-peer-deps
       
       - name: Build
         run: npm run build
