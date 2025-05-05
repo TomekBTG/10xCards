@@ -14,21 +14,33 @@ import { cn } from "@/lib/utils";
 import { flashcardService } from "@/lib/services/flashcardService";
 
 interface FilterPanelProps {
+  filters?: FlashcardsFilter;
   onFilterChange: (filters: FlashcardsFilter) => void;
 }
 
 type ExtendedFlashcardStatus = FlashcardStatus | "all";
 type DifficultyType = "easy" | "medium" | "hard" | "all";
 
-const FilterPanel = ({ onFilterChange }: FilterPanelProps) => {
+const FilterPanel = ({ filters = {}, onFilterChange }: FilterPanelProps) => {
   // Stan filtrów
-  const [filters, setFilters] = useState<FlashcardsFilter>({});
-  const [status, setStatus] = useState<ExtendedFlashcardStatus>("all");
-  const [categoryId, setCategoryId] = useState<string>("all");
-  const [difficulty, setDifficulty] = useState<DifficultyType>("all");
-  const [createdBefore, setCreatedBefore] = useState<Date | undefined>(undefined);
-  const [createdAfter, setCreatedAfter] = useState<Date | undefined>(undefined);
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [status, setStatus] = useState<ExtendedFlashcardStatus>(
+    filters.status ? filters.status : "all"
+  );
+  const [categoryId, setCategoryId] = useState<string>(
+    filters.categoryId ? filters.categoryId : "all"
+  );
+  const [difficulty, setDifficulty] = useState<DifficultyType>(
+    filters.difficulty ? filters.difficulty as DifficultyType : "all"
+  );
+  const [createdBefore, setCreatedBefore] = useState<Date | undefined>(
+    filters.createdBefore
+  );
+  const [createdAfter, setCreatedAfter] = useState<Date | undefined>(
+    filters.createdAfter
+  );
+  const [searchTerm, setSearchTerm] = useState<string>(
+    filters.searchTerm || ""
+  );
   // Stan dla przechowywania dostępnych kategorii
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
 
@@ -45,6 +57,16 @@ const FilterPanel = ({ onFilterChange }: FilterPanelProps) => {
 
     fetchCategories();
   }, []);
+  
+  // Aktualizacja stanów lokalnych gdy zmieniają się przekazane filtry
+  useEffect(() => {
+    setStatus(filters.status ? filters.status : "all");
+    setCategoryId(filters.categoryId ? filters.categoryId : "all");
+    setDifficulty(filters.difficulty ? filters.difficulty as DifficultyType : "all");
+    setCreatedBefore(filters.createdBefore);
+    setCreatedAfter(filters.createdAfter);
+    setSearchTerm(filters.searchTerm || "");
+  }, [filters]);
 
   // Funkcja do ręcznego stosowania filtrów
   const applyFilters = useCallback(() => {

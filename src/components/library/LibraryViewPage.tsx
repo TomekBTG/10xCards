@@ -19,25 +19,162 @@ export interface FlashcardViewModel extends FlashcardDTO {
   selected: boolean;
 }
 
-const LibraryViewPage = () => {
+// ------------------------------------------------
+// Custom hooks
+// ------------------------------------------------
+
+// Hook do zarządzania stanem fiszek
+export function useFlashcards() {
   // Stan dla listy fiszek
   const [flashcards, setFlashcards] = useState<FlashcardViewModel[]>([]);
-  // Stan dla filtrów
-  const [filters, setFilters] = useState<FlashcardsFilter>({});
   // Stan zaznaczonych fiszek
   const [selectedFlashcards, setSelectedFlashcards] = useState<string[]>([]);
   // Stan ładowania
   const [isLoading, setIsLoading] = useState(true);
   // Stan dla błędu
   const [error, setError] = useState<string | null>(null);
-  // Stan dla paginacji
+
+  // Obsługa zaznaczenia/odznaczenia pojedynczej fiszki
+  const handleFlashcardSelect = useCallback((id: string, selected: boolean) => {
+    // Aktualizacja stanu fiszek
+    setFlashcards((prev) => prev.map((flashcard) => (flashcard.id === id ? { ...flashcard, selected } : flashcard)));
+
+    // Aktualizacja listy zaznaczonych fiszek
+    if (selected) {
+      setSelectedFlashcards((prev) => [...prev, id]);
+    } else {
+      setSelectedFlashcards((prev) => prev.filter((fId) => fId !== id));
+    }
+  }, []);
+
+  // Obsługa zaznaczenia/odznaczenia wszystkich fiszek
+  const handleSelectAll = useCallback((selected: boolean) => {
+    // Aktualizacja stanu fiszek
+    setFlashcards((prev) => prev.map((flashcard) => ({ ...flashcard, selected })));
+
+    // Aktualizacja listy zaznaczonych fiszek
+    if (selected) {
+      setSelectedFlashcards(flashcards.map((f) => f.id));
+    } else {
+      setSelectedFlashcards([]);
+    }
+  }, [flashcards]);
+
+  // Obsługa aktualizacji pojedynczej fiszki
+  const handleFlashcardUpdate = useCallback(async (id: string, updatedData: Partial<FlashcardDTO>) => {
+    try {
+      const response = await fetch(`/api/flashcards/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Aktualizacja lokalnej listy fiszek
+      setFlashcards((prev) =>
+        prev.map((flashcard) =>
+          flashcard.id === id ? { ...flashcard, ...updatedData, selected: flashcard.selected } : flashcard
+        )
+      );
+
+      return true;
+    } catch (error) {
+      console.error("Error updating flashcard:", error);
+      return false;
+    }
+  }, []);
+
+  // Obsługa usuwania pojedynczej fiszki
+  const handleFlashcardDelete = useCallback(async (id: string) => {
+    try {
+      const response = await fetch(`/api/flashcards/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Usunięcie fiszki z lokalnej listy
+      setFlashcards((prev) => prev.filter((flashcard) => flashcard.id !== id));
+      setSelectedFlashcards((prev) => prev.filter((fId) => fId !== id));
+
+      return true;
+    } catch (error) {
+      console.error("Error deleting flashcard:", error);
+      return false;
+    }
+  }, []);
+
+  return {
+    flashcards,
+    setFlashcards,
+    selectedFlashcards,
+    setSelectedFlashcards,
+    isLoading,
+    setIsLoading,
+    error,
+    setError,
+    handleFlashcardSelect,
+    handleSelectAll,
+    handleFlashcardUpdate,
+    handleFlashcardDelete
+  };
+}
+
+// Hook do zarządzania paginacją
+export function usePagination() {
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
     total: 0,
   });
 
-  // Funkcja pobierająca dane z API
+  const handlePageChange = useCallback((page: number) => {
+    setPagination((prev) => ({ ...prev, page }));
+  }, []);
+
+  const handleLimitChange = useCallback((newLimit: number) => {
+    setPagination((prev) => ({ ...prev, limit: newLimit, page: 1 }));
+  }, []);
+
+  return {
+    pagination,
+    setPagination,
+    handlePageChange,
+    handleLimitChange
+  };
+}
+
+// Hook do zarządzania filtrami
+export function useFilters() {
+  const [filters, setFilters] = useState<FlashcardsFilter>({});
+
+  const handleFilterChange = useCallback((newFilters: FlashcardsFilter) => {
+    setFilters(newFilters);
+  }, []);
+
+  return {
+    filters,
+    setFilters,
+    handleFilterChange
+  };
+}
+
+// Hook do pobierania danych z API
+export function useFlashcardsApi(
+  filters: FlashcardsFilter,
+  pagination: { page: number; limit: number; total: number },
+  setPagination: React.Dispatch<React.SetStateAction<{ page: number; limit: number; total: number }>>,
+  setFlashcards: React.Dispatch<React.SetStateAction<FlashcardViewModel[]>>,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setError: React.Dispatch<React.SetStateAction<string | null>>
+) {
   const fetchFlashcards = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -68,6 +205,10 @@ const LibraryViewPage = () => {
         queryParams.append("createdAfter", filters.createdAfter.toISOString());
       }
 
+      if (filters.searchTerm) {
+        queryParams.append("search", filters.searchTerm);
+      }
+
       // Wywołanie API
       const response = await fetch(`/api/flashcards?${queryParams.toString()}`);
 
@@ -79,55 +220,29 @@ const LibraryViewPage = () => {
 
       // Aktualizacja danych i paginacji
       setFlashcards(data.data.map((flashcard) => ({ ...flashcard, selected: false })));
-      setPagination(data.pagination);
+      setPagination(prev => ({ ...prev, total: data.pagination.total }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Wystąpił błąd podczas ładowania fiszek");
       console.error("Error fetching flashcards:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [filters, pagination.page, pagination.limit]);
+  }, [filters, pagination.page, pagination.limit, setFlashcards, setPagination, setIsLoading, setError]);
 
-  // Pobranie danych przy montowaniu komponentu i zmianie filtrów/paginacji
-  useEffect(() => {
-    fetchFlashcards();
-  }, [fetchFlashcards]);
+  return { fetchFlashcards };
+}
 
-  // Obsługa zmiany filtrów
-  const handleFilterChange = useCallback((newFilters: FlashcardsFilter) => {
-    setFilters(newFilters);
-    // Reset paginacji przy zmianie filtrów
-    setPagination((prev) => ({ ...prev, page: 1 }));
-  }, []);
-
-  // Obsługa zaznaczenia/odznaczenia pojedynczej fiszki
-  const handleFlashcardSelect = (id: string, selected: boolean) => {
-    // Aktualizacja stanu fiszek
-    setFlashcards((prev) => prev.map((flashcard) => (flashcard.id === id ? { ...flashcard, selected } : flashcard)));
-
-    // Aktualizacja listy zaznaczonych fiszek
-    if (selected) {
-      setSelectedFlashcards((prev) => [...prev, id]);
-    } else {
-      setSelectedFlashcards((prev) => prev.filter((fId) => fId !== id));
-    }
-  };
-
-  // Obsługa zaznaczenia/odznaczenia wszystkich fiszek
-  const handleSelectAll = (selected: boolean) => {
-    // Aktualizacja stanu fiszek
-    setFlashcards((prev) => prev.map((flashcard) => ({ ...flashcard, selected })));
-
-    // Aktualizacja listy zaznaczonych fiszek
-    if (selected) {
-      setSelectedFlashcards(flashcards.map((f) => f.id));
-    } else {
-      setSelectedFlashcards([]);
-    }
-  };
-
+// Hook do operacji masowych
+export function useBulkOperations(
+  selectedFlashcards: string[],
+  flashcards: FlashcardViewModel[],
+  fetchFlashcards: () => Promise<void>,
+  setSelectedFlashcards: React.Dispatch<React.SetStateAction<string[]>>,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setError: React.Dispatch<React.SetStateAction<string | null>>
+) {
   // Obsługa aktualizacji statusu dla wielu fiszek
-  const handleBulkStatusUpdate = async (status: FlashcardStatus) => {
+  const handleBulkStatusUpdate = useCallback(async (status: FlashcardStatus) => {
     if (selectedFlashcards.length === 0) return;
 
     setIsLoading(true);
@@ -155,7 +270,7 @@ const LibraryViewPage = () => {
       await Promise.all(updatePromises);
 
       // Ponowne pobranie danych po aktualizacji
-      fetchFlashcards();
+      await fetchFlashcards();
 
       // Reset zaznaczonych fiszek
       setSelectedFlashcards([]);
@@ -165,10 +280,10 @@ const LibraryViewPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedFlashcards, flashcards, fetchFlashcards, setSelectedFlashcards, setIsLoading, setError]);
 
   // Obsługa usuwania wielu fiszek
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = useCallback(async () => {
     if (selectedFlashcards.length === 0) return;
 
     if (!confirm(`Czy na pewno chcesz usunąć ${selectedFlashcards.length} zaznaczonych fiszek?`)) {
@@ -189,7 +304,7 @@ const LibraryViewPage = () => {
       await Promise.all(deletePromises);
 
       // Ponowne pobranie danych po usunięciu
-      fetchFlashcards();
+      await fetchFlashcards();
 
       // Reset zaznaczonych fiszek
       setSelectedFlashcards([]);
@@ -199,209 +314,94 @@ const LibraryViewPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedFlashcards, fetchFlashcards, setSelectedFlashcards, setIsLoading, setError]);
 
-  // Obsługa zmiany strony
-  const handlePageChange = (page: number) => {
-    setPagination((prev) => ({ ...prev, page }));
-  };
+  return { handleBulkStatusUpdate, handleBulkDelete };
+}
 
-  // Obsługa aktualizacji pojedynczej fiszki
-  const handleFlashcardUpdate = async (id: string, updatedData: Partial<FlashcardDTO>) => {
-    try {
-      const response = await fetch(`/api/flashcards/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedData),
-      });
+// Główny komponent strony biblioteki fiszek
+const LibraryViewPage = () => {
+  // Wykorzystanie customowych hooków
+  const {
+    flashcards,
+    setFlashcards,
+    selectedFlashcards,
+    setSelectedFlashcards,
+    isLoading,
+    setIsLoading,
+    error,
+    setError,
+    handleFlashcardSelect,
+    handleSelectAll,
+    handleFlashcardUpdate,
+    handleFlashcardDelete
+  } = useFlashcards();
+  
+  const { pagination, setPagination, handlePageChange, handleLimitChange } = usePagination();
+  const { filters, setFilters, handleFilterChange } = useFilters();
+  
+  // Rejestracja efektu resetującego paginację przy zmianie filtrów
+  useEffect(() => {
+    setPagination(prev => ({ ...prev, page: 1 }));
+  }, [filters, setPagination]);
+  
+  const { fetchFlashcards } = useFlashcardsApi(
+    filters,
+    pagination,
+    setPagination,
+    setFlashcards,
+    setIsLoading,
+    setError
+  );
+  
+  const { handleBulkStatusUpdate, handleBulkDelete } = useBulkOperations(
+    selectedFlashcards,
+    flashcards,
+    fetchFlashcards,
+    setSelectedFlashcards,
+    setIsLoading,
+    setError
+  );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // Aktualizacja lokalnej listy fiszek
-      setFlashcards((prev) =>
-        prev.map((flashcard) =>
-          flashcard.id === id ? { ...flashcard, ...updatedData, selected: flashcard.selected } : flashcard
-        )
-      );
-
-      return true;
-    } catch (error) {
-      console.error("Error updating flashcard:", error);
-      return false;
-    }
-  };
-
-  // Obsługa usuwania pojedynczej fiszki
-  const handleFlashcardDelete = async (id: string) => {
-    try {
-      const response = await fetch(`/api/flashcards/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // Usunięcie fiszki z lokalnej listy
-      setFlashcards((prev) => prev.filter((flashcard) => flashcard.id !== id));
-      // Usunięcie z listy zaznaczonych, jeśli była zaznaczona
-      setSelectedFlashcards((prev) => prev.filter((fId) => fId !== id));
-
-      return true;
-    } catch (error) {
-      console.error("Error deleting flashcard:", error);
-      return false;
-    }
-  };
-
-  // Obsługa zmiany limitu strony
-  const handleLimitChange = (newLimit: number) => {
-    setPagination((prev) => ({ ...prev, limit: newLimit }));
-  };
+  // Pobranie danych przy montowaniu komponentu i zmianie filtrów/paginacji
+  useEffect(() => {
+    fetchFlashcards();
+  }, [fetchFlashcards]);
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">Biblioteka fiszek</h1>
+
       {error && (
-        <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded" role="alert">
-          <p>{error}</p>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 relative" role="alert">
+          <strong className="font-bold">Błąd! </strong>
+          <span className="block sm:inline">{error}</span>
         </div>
       )}
 
-      <FilterPanel onFilterChange={handleFilterChange} />
+      <FilterPanel 
+        filters={filters} 
+        onFilterChange={handleFilterChange} 
+      />
 
-      {selectedFlashcards.length > 0 && (
-        <BulkActionsPanel
-          selectedCount={selectedFlashcards.length}
-          onStatusChange={handleBulkStatusUpdate}
-          onDelete={handleBulkDelete}
-        />
-      )}
+      <BulkActionsPanel
+        selectedCount={selectedFlashcards.length}
+        onStatusUpdate={handleBulkStatusUpdate}
+        onDelete={handleBulkDelete}
+        isLoading={isLoading}
+      />
 
-      {isLoading ? (
-        <div className="flex justify-center items-center h-40">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 dark:border-blue-400"></div>
-        </div>
-      ) : flashcards.length === 0 ? (
-        <div className="bg-white dark:bg-zinc-900 p-8 rounded-lg shadow dark:shadow-zinc-800/20 text-center">
-          <p className="text-gray-500 dark:text-gray-400">Brak fiszek pasujących do wybranych kryteriów</p>
-        </div>
-      ) : (
-        <FlashcardList
-          flashcards={flashcards}
-          isLoading={isLoading}
-          onSelect={handleFlashcardSelect}
-          onSelectAll={handleSelectAll}
-          onUpdate={handleFlashcardUpdate}
-          onDelete={handleFlashcardDelete}
-        />
-      )}
-
-      {/* Komponent paginacji */}
-      {!isLoading && flashcards.length > 0 && (
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-6">
-          {/* Wybór liczby elementów na stronie */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Elementy na stronie:</span>
-            <select
-              className="px-2 py-1 border rounded dark:bg-zinc-800 dark:border-zinc-700 dark:text-white"
-              value={pagination.limit}
-              onChange={(e) => handleLimitChange(Number(e.target.value))}
-            >
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select>
-          </div>
-
-          {/* Przyciski paginacji */}
-          {pagination.total > pagination.limit && (
-            <nav className="inline-flex rounded-md shadow-sm" aria-label="Paginacja">
-              <button
-                onClick={() => handlePageChange(1)}
-                disabled={pagination.page === 1}
-                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span className="sr-only">Pierwsza strona</span>
-                <span>&laquo;</span>
-              </button>
-              <button
-                onClick={() => handlePageChange(Math.max(1, pagination.page - 1))}
-                disabled={pagination.page === 1}
-                className="relative inline-flex items-center px-2 py-2 border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span className="sr-only">Poprzednia strona</span>
-                <span>&lsaquo;</span>
-              </button>
-
-              {/* Renderowanie przycisków stron */}
-              {Array.from({ length: Math.min(5, Math.ceil(pagination.total / pagination.limit)) }).map((_, i) => {
-                let pageNumber;
-                const totalPages = Math.ceil(pagination.total / pagination.limit);
-
-                // Logika wyświetlania maksymalnie 5 przycisków stron
-                if (pagination.page <= 3) {
-                  // Na początku pokazujemy strony 1-5
-                  pageNumber = i + 1;
-                } else if (pagination.page >= totalPages - 2) {
-                  // Na końcu pokazujemy ostatnie 5 stron
-                  pageNumber = totalPages - 4 + i;
-                } else {
-                  // W środku pokazujemy 2 strony przed i 2 po bieżącej
-                  pageNumber = pagination.page - 2 + i;
-                }
-
-                // Sprawdzamy czy numer strony jest w poprawnym zakresie
-                if (pageNumber > 0 && pageNumber <= totalPages) {
-                  return (
-                    <button
-                      key={pageNumber}
-                      onClick={() => handlePageChange(pageNumber)}
-                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                        pagination.page === pageNumber
-                          ? "z-10 bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-700 text-blue-600 dark:text-blue-400"
-                          : "bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-700"
-                      }`}
-                    >
-                      {pageNumber}
-                    </button>
-                  );
-                }
-                return null;
-              })}
-
-              <button
-                onClick={() =>
-                  handlePageChange(Math.min(Math.ceil(pagination.total / pagination.limit), pagination.page + 1))
-                }
-                disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
-                className="relative inline-flex items-center px-2 py-2 border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span className="sr-only">Następna strona</span>
-                <span>&rsaquo;</span>
-              </button>
-              <button
-                onClick={() => handlePageChange(Math.ceil(pagination.total / pagination.limit))}
-                disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
-                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span className="sr-only">Ostatnia strona</span>
-                <span>&raquo;</span>
-              </button>
-            </nav>
-          )}
-
-          {/* Informacja o paginacji */}
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            Wyświetlanie {Math.min((pagination.page - 1) * pagination.limit + 1, pagination.total)} -{" "}
-            {Math.min(pagination.page * pagination.limit, pagination.total)} z {pagination.total}
-          </div>
-        </div>
-      )}
+      <FlashcardList
+        flashcards={flashcards}
+        isLoading={isLoading}
+        pagination={pagination}
+        onSelectFlashcard={handleFlashcardSelect}
+        onSelectAll={handleSelectAll}
+        onUpdateFlashcard={handleFlashcardUpdate}
+        onDeleteFlashcard={handleFlashcardDelete}
+        onPageChange={handlePageChange}
+        onLimitChange={handleLimitChange}
+      />
     </div>
   );
 };
