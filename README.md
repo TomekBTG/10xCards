@@ -1,4 +1,4 @@
-# 10xCards
+# 10xCards .
 
 ## Project Description
 
