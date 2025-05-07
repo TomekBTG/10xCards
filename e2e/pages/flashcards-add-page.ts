@@ -1,4 +1,4 @@
-import type { Page, Locator } from "@playwright/test";
+import type { Locator } from "@playwright/test";
 import { BasePage } from "./base-page";
 
 /**
@@ -51,10 +51,6 @@ export class FlashcardsAddPage extends BasePage {
   readonly flashcardsList = ['[data-testid="flashcards-list"]', ".flashcards-list"];
   readonly flashcardItems = ['[data-testid="flashcard-item"]', ".flashcard-item"];
 
-  constructor(page: Page) {
-    super(page);
-  }
-
   /**
    * Przechodzi do strony dodawania fiszek
    */
@@ -71,7 +67,6 @@ export class FlashcardsAddPage extends BasePage {
     // Zbierz informacje o treści strony
     const pageTitle = await this.page.title();
     const currentUrl = this.page.url();
-    const pageContent = await this.page.content();
 
     console.log(`Tytuł strony: ${pageTitle}`);
     console.log(`URL: ${currentUrl}`);
@@ -156,7 +151,7 @@ export class FlashcardsAddPage extends BasePage {
   /**
    * Wprowadza treść przedniej strony fiszki
    */
-  async fillFrontContent(text: string, index: number = 0): Promise<void> {
+  async fillFrontContent(text: string, index = 0): Promise<void> {
     const element = await this.findVisibleElement(this.frontInputSelector);
     if (!element) {
       console.error("Nie znaleziono pola przedniej strony fiszki");
@@ -170,7 +165,7 @@ export class FlashcardsAddPage extends BasePage {
   /**
    * Wprowadza treść tylnej strony fiszki
    */
-  async fillBackContent(text: string, index: number = 0): Promise<void> {
+  async fillBackContent(text: string, index = 0): Promise<void> {
     const element = await this.findVisibleElement(this.backInputSelector);
     if (!element) {
       console.error("Nie znaleziono pola tylnej strony fiszki");
@@ -184,7 +179,7 @@ export class FlashcardsAddPage extends BasePage {
   /**
    * Wybiera kategorię fiszki
    */
-  async selectCategory(categoryName: string, index: number = 0): Promise<void> {
+  async selectCategory(categoryName: string, index = 0): Promise<void> {
     const element = await this.findVisibleElement(this.categorySelector);
     if (!element) {
       console.error("Nie znaleziono selektora kategorii");
@@ -199,7 +194,7 @@ export class FlashcardsAddPage extends BasePage {
   /**
    * Wybiera poziom trudności fiszki
    */
-  async selectDifficulty(difficulty: "easy" | "medium" | "hard", index: number = 0): Promise<void> {
+  async selectDifficulty(difficulty: "easy" | "medium" | "hard", index = 0): Promise<void> {
     let selectors: string[];
 
     switch (difficulty) {
@@ -258,6 +253,7 @@ export class FlashcardsAddPage extends BasePage {
       await this.page.waitForSelector('[data-testid="toast-success"]', { timeout: 5000 });
     } catch (error) {
       console.log("Nie znaleziono komunikatu sukcesu po zapisie");
+      console.log(error);
     }
   }
 
@@ -269,7 +265,7 @@ export class FlashcardsAddPage extends BasePage {
     back: string,
     category: string,
     difficulty: "easy" | "medium" | "hard",
-    index: number = 0
+    index = 0
   ): Promise<void> {
     await this.fillFrontContent(front, index);
     await this.fillBackContent(back, index);

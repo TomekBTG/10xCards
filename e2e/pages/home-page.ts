@@ -1,14 +1,9 @@
-import type { Page } from "@playwright/test";
 import { BasePage } from "./base-page";
 
 /**
  * Klasa obsługująca stronę główną w testach E2E
  */
 export class HomePage extends BasePage {
-  constructor(page: Page) {
-    super(page);
-  }
-
   /**
    * Przechodzi do strony głównej
    */

@@ -15,7 +15,7 @@ export class BasePage {
   /**
    * Przechodzi do podanej ścieżki URL
    */
-  async goto(path: string = "/"): Promise<void> {
+  async goto(path = "/"): Promise<void> {
     await this.page.goto(path);
   }
 

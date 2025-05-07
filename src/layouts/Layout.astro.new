@@ -1,4 +1,4 @@
----
+﻿---
 import "../styles/global.css";
 import { Toaster } from "../components/ui/sonner";
 import UserMenu from "../components/UserMenu";
@@ -25,8 +25,9 @@ const isLoggedIn = "isAuthenticated" in Astro.locals ? (Astro.locals.isAuthentic
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <title>{title} | 10xCards</title>
     <script is:inline>
-      const theme = localStorage.getItem("theme");
-      if (theme === "light") {
+      // Prosty skrypt do obsługi motywu (ciemny/jasny)
+      const userTheme = localStorage.getItem("theme");
+      if (userTheme === "light") {
         document.documentElement.classList.remove("dark");
         document.documentElement.classList.add("light");
       } else {
