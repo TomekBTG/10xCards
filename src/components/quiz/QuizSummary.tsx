@@ -34,7 +34,9 @@ const QuizSummary: React.FC<QuizSummaryProps> = ({ stats, onRestart }) => {
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
           <div className="bg-gray-100 dark:bg-zinc-800 p-4 rounded-lg text-center">
             <p className="text-gray-500 dark:text-gray-400 text-sm">Całkowity czas</p>
-            <p className="text-xl font-mono mt-1 text-gray-900 dark:text-gray-100">{formatTime(stats.durationSeconds)}</p>
+            <p className="text-xl font-mono mt-1 text-gray-900 dark:text-gray-100">
+              {formatTime(stats.durationSeconds)}
+            </p>
           </div>
 
           <div className="bg-gray-100 dark:bg-zinc-800 p-4 rounded-lg text-center">
@@ -108,7 +110,11 @@ const QuizSummary: React.FC<QuizSummaryProps> = ({ stats, onRestart }) => {
       </CardContent>
 
       <CardFooter className="flex flex-col sm:flex-row gap-3 justify-end border-t border-gray-200 dark:border-zinc-800 p-6">
-        <Button onClick={() => (window.location.href = "/")} variant="outline" className="w-full sm:w-auto border-gray-300 dark:border-zinc-700">
+        <Button
+          onClick={() => (window.location.href = "/")}
+          variant="outline"
+          className="w-full sm:w-auto border-gray-300 dark:border-zinc-700"
+        >
           Powrót do pulpitu
         </Button>
         <Button onClick={onRestart} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700">

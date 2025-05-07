@@ -60,20 +60,20 @@ const FlashcardItem = ({ flashcard, onSelect, onUpdate, onDelete }: FlashcardIte
   const getStatusDetails = () => {
     switch (flashcard.status) {
       case "accepted":
-        return { 
-          label: "Zaakceptowana", 
-          color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" 
+        return {
+          label: "Zaakceptowana",
+          color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
         };
       case "rejected":
-        return { 
-          label: "Odrzucona", 
-          color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300" 
+        return {
+          label: "Odrzucona",
+          color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
         };
       case "pending":
       default:
-        return { 
-          label: "Oczekująca", 
-          color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300" 
+        return {
+          label: "Oczekująca",
+          color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
         };
     }
   };

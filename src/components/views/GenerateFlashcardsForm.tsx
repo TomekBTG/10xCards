@@ -59,7 +59,7 @@ export function GenerateFlashcardsForm({
   const isTextTooShort = text.length > 0 && text.length < 500;
   const isTextTooLong = text.length > 10000;
   const isValidInput = text.length >= 500 && text.length <= 10000;
-  
+
   // Validation for category selection
   const isCategoryValid = isAddingCategory ? !!newCategoryName.trim() : !!selectedCategoryId;
 
@@ -113,9 +113,7 @@ export function GenerateFlashcardsForm({
     // Validate category selection
     if (!isCategoryValid) {
       toast.error("Wybór kategorii jest wymagany", {
-        description: isAddingCategory 
-          ? "Wprowadź nazwę nowej kategorii" 
-          : "Wybierz kategorię z listy"
+        description: isAddingCategory ? "Wprowadź nazwę nowej kategorii" : "Wybierz kategorię z listy",
       });
       return;
     }
@@ -182,7 +180,9 @@ export function GenerateFlashcardsForm({
             {/* Wybór kategorii */}
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <Label htmlFor="category-select">Kategoria <span className="text-red-500">*</span></Label>
+                <Label htmlFor="category-select">
+                  Kategoria <span className="text-red-500">*</span>
+                </Label>
                 <Button type="button" variant="ghost" onClick={toggleAddCategory} className="text-sm h-auto py-1">
                   {isAddingCategory ? "Wybierz istniejącą" : "Dodaj nową kategorię"}
                 </Button>
@@ -190,7 +190,9 @@ export function GenerateFlashcardsForm({
 
               {isAddingCategory ? (
                 <div className="space-y-2">
-                  <Label htmlFor="new-category">Nazwa nowej kategorii <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="new-category">
+                    Nazwa nowej kategorii <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     id="new-category"
                     value={newCategoryName}

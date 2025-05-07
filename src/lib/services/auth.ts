@@ -9,4 +9,4 @@ export const signOut = async (): Promise<void> => {
   if (error) {
     throw error;
   }
-}; 
+};

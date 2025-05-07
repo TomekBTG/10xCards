@@ -42,14 +42,14 @@ export function useProfileActions() {
       // Sprawdź czy użytkownik jest zalogowany
       const { data: sessionData } = await supabaseClient.auth.getSession();
       const isLoggedIn = !!sessionData.session && !!sessionData.session.user;
-      
+
       if (!isLoggedIn) {
         return {
           success: false,
           error: "Nie znaleziono danych użytkownika. Proszę zalogować się ponownie.",
         };
       }
-      
+
       // Pobierz dane użytkownika
       const { data: userData } = await supabaseClient.auth.getUser();
       const userEmail = userData.user?.email;
@@ -133,7 +133,7 @@ export function useProfileActions() {
       // Sprawdź czy użytkownik jest zalogowany
       const { data: sessionData } = await supabaseClient.auth.getSession();
       const isLoggedIn = !!sessionData.session && !!sessionData.session.user;
-      
+
       if (!isLoggedIn) {
         return {
           success: false,
@@ -146,11 +146,11 @@ export function useProfileActions() {
         // Pobierz dane użytkownika
         const { data: userData } = await supabaseClient.auth.getUser();
         const userEmail = userData.user?.email;
-        
+
         if (!userEmail) {
           return {
-            success: false, 
-            error: "Nie znaleziono danych użytkownika."
+            success: false,
+            error: "Nie znaleziono danych użytkownika.",
           };
         }
 

@@ -66,7 +66,10 @@ const Settings = React.memo(function Settings({
             Kategoria
           </Label>
           <Select value={localSettings.categoryId || "all"} onValueChange={handleCategoryChange}>
-            <SelectTrigger id="category" className="w-full bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700">
+            <SelectTrigger
+              id="category"
+              className="w-full bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700"
+            >
               <SelectValue placeholder="Wszystkie kategorie" />
             </SelectTrigger>
             <SelectContent className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700">
@@ -85,7 +88,10 @@ const Settings = React.memo(function Settings({
             Poziom trudności
           </Label>
           <Select value={localSettings.difficulty || "all"} onValueChange={handleDifficultyChange}>
-            <SelectTrigger id="difficulty" className="w-full bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700">
+            <SelectTrigger
+              id="difficulty"
+              className="w-full bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700"
+            >
               <SelectValue placeholder="Wszystkie poziomy" />
             </SelectTrigger>
             <SelectContent className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700">
@@ -141,21 +147,17 @@ export default function QuizSetup({ categories, filterOptions, onFilterChange, o
   return (
     <div>
       <p className="text-muted-foreground mb-6">Skonfiguruj parametry sesji, a następnie rozpocznij naukę z fiszkami</p>
-      
+
       <Card className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg overflow-hidden">
         <CardHeader className="border-b border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800">
           <CardTitle>Parametry sesji</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6 p-6">
-          <Settings
-            categories={categories}
-            settingsOptions={sessionOptions}
-            onSettingsChange={handleSettingsChange}
-          />
+          <Settings categories={categories} settingsOptions={sessionOptions} onSettingsChange={handleSettingsChange} />
         </CardContent>
         <CardFooter className="flex justify-end gap-4 border-t border-gray-200 dark:border-zinc-800 p-6">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={resetSettings}
             className="border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800"
           >

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface ActivityItem {
   date: string;
@@ -10,31 +10,31 @@ const DashboardSummary: React.FC = () => {
   // Przykładowe ostatnie aktywności
   const recentActivity: ActivityItem[] = [
     {
-      date: '28 kwi',
-      action: 'Quiz ukończony',
-      details: 'Angielski: Czasy przeszłe - 85%'
+      date: "28 kwi",
+      action: "Quiz ukończony",
+      details: "Angielski: Czasy przeszłe - 85%",
     },
     {
-      date: '27 kwi',
-      action: 'Fiszki dodane',
-      details: 'Dodano 15 nowych fiszek'
+      date: "27 kwi",
+      action: "Fiszki dodane",
+      details: "Dodano 15 nowych fiszek",
     },
     {
-      date: '26 kwi',
-      action: 'Quiz ukończony',
-      details: 'Programowanie: JavaScript - 92%'
+      date: "26 kwi",
+      action: "Quiz ukończony",
+      details: "Programowanie: JavaScript - 92%",
     },
     {
-      date: '25 kwi',
-      action: 'Fiszki wygenerowane',
-      details: 'Historia: II Wojna Światowa'
-    }
+      date: "25 kwi",
+      action: "Fiszki wygenerowane",
+      details: "Historia: II Wojna Światowa",
+    },
   ];
 
   return (
     <div>
       <h2 className="text-xl font-semibold mb-5 text-white">Podsumowanie</h2>
-      
+
       <div className="mb-6">
         <h3 className="text-md font-medium mb-3 text-zinc-300">Obecny postęp</h3>
         <div className="mb-2 flex justify-between">
@@ -42,10 +42,10 @@ const DashboardSummary: React.FC = () => {
           <span className="text-zinc-400 text-sm">93%</span>
         </div>
         <div className="w-full bg-zinc-800 rounded-full h-2.5">
-          <div className="bg-blue-500 h-2.5 rounded-full" style={{ width: '93%' }}></div>
+          <div className="bg-blue-500 h-2.5 rounded-full" style={{ width: "93%" }}></div>
         </div>
       </div>
-      
+
       <div>
         <h3 className="text-md font-medium mb-3 text-zinc-300">Ostatnia aktywność</h3>
         <div className="space-y-3">

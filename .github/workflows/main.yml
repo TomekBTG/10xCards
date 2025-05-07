@@ -30,8 +30,8 @@ jobs:
       - name: Install TypeScript
         run: npm install typescript@latest --no-save --legacy-peer-deps
       
-      - name: "Lint (ignorując błędy formatowania)"
-        run: 'npm run lint -- --rule "prettier/prettier: off"'
+      - name: Lint
+        run: npm run lint
 
   test:
     name: Test
@@ -60,9 +60,6 @@ jobs:
       
       - name: Install TypeScript
         run: npm install typescript@latest --no-save --legacy-peer-deps
-      
-      - name: Format code
-        run: npx prettier --write "**/*.{js,jsx,ts,tsx,json,md}"
       
       - name: Run unit tests
         run: npm run test

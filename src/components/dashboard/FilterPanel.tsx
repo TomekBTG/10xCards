@@ -102,7 +102,9 @@ export default function FilterPanel({ onFilterChange, isLoading = false }: Filte
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <div className="space-y-2">
-            <Label htmlFor="status" className="text-zinc-300">Status</Label>
+            <Label htmlFor="status" className="text-zinc-300">
+              Status
+            </Label>
             <Select
               value={filters.status}
               onValueChange={(value) => handleFilterChange("status", value)}
@@ -121,7 +123,9 @@ export default function FilterPanel({ onFilterChange, isLoading = false }: Filte
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="minCount" className="text-zinc-300">Minimalna ilość</Label>
+            <Label htmlFor="minCount" className="text-zinc-300">
+              Minimalna ilość
+            </Label>
             <Input
               id="minCount"
               type="number"
@@ -134,7 +138,9 @@ export default function FilterPanel({ onFilterChange, isLoading = false }: Filte
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dateFrom" className="text-zinc-300">Data od</Label>
+            <Label htmlFor="dateFrom" className="text-zinc-300">
+              Data od
+            </Label>
             <Popover>
               <PopoverTrigger asChild>
                 <button
@@ -167,7 +173,9 @@ export default function FilterPanel({ onFilterChange, isLoading = false }: Filte
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dateTo" className="text-zinc-300">Data do</Label>
+            <Label htmlFor="dateTo" className="text-zinc-300">
+              Data do
+            </Label>
             <Popover>
               <PopoverTrigger asChild>
                 <button
@@ -202,7 +210,9 @@ export default function FilterPanel({ onFilterChange, isLoading = false }: Filte
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="searchTerm" className="text-zinc-300">Wyszukiwanie</Label>
+            <Label htmlFor="searchTerm" className="text-zinc-300">
+              Wyszukiwanie
+            </Label>
             <Input
               id="searchTerm"
               type="text"
@@ -215,15 +225,15 @@ export default function FilterPanel({ onFilterChange, isLoading = false }: Filte
           </div>
 
           <div className="flex items-end gap-2">
-            <button 
-              onClick={applyFilters} 
-              disabled={isLoading} 
+            <button
+              onClick={applyFilters}
+              disabled={isLoading}
               className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Zastosuj filtry
             </button>
-            <button 
-              onClick={resetFilters} 
+            <button
+              onClick={resetFilters}
               disabled={isLoading}
               className="px-4 py-2 bg-zinc-800 text-zinc-200 font-medium rounded-md border border-zinc-700 hover:bg-zinc-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >

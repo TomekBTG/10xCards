@@ -52,11 +52,7 @@ export function LoginForm() {
               className="h-4 w-4 rounded border-zinc-700 bg-zinc-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-zinc-900"
               aria-describedby="remember-me-description"
             />
-            <label
-              id="remember-me-description"
-              htmlFor="remember-me"
-              className="ml-2 block text-sm text-zinc-400"
-            >
+            <label id="remember-me-description" htmlFor="remember-me" className="ml-2 block text-sm text-zinc-400">
               Zapamiętaj mnie
             </label>
           </div>

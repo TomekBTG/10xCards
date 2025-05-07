@@ -17,7 +17,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
   const supabase = (locals as LocalsWithSupabase).supabase;
 
   // Sprawdź uwierzytelnienie z middleware
-  const isLoggedIn = 'isAuthenticated' in locals ? locals.isAuthenticated as boolean : false;
+  const isLoggedIn = "isAuthenticated" in locals ? (locals.isAuthenticated as boolean) : false;
 
   if (!isLoggedIn && !ignoreAuth) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
@@ -115,7 +115,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const supabase = (locals as LocalsWithSupabase).supabase;
 
   // Sprawdź uwierzytelnienie z middleware
-  const isLoggedIn = 'isAuthenticated' in locals ? locals.isAuthenticated as boolean : false;
+  const isLoggedIn = "isAuthenticated" in locals ? (locals.isAuthenticated as boolean) : false;
 
   if (!isLoggedIn && !ignoreAuth) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });

@@ -20,11 +20,10 @@ interface LocalsWithSupabase {
   };
 }
 
-
 export const GET: APIRoute = async ({ params, locals }) => {
   // Sprawdź uwierzytelnienie z middleware
-  const isLoggedIn = 'isAuthenticated' in locals ? locals.isAuthenticated as boolean : false;
-  
+  const isLoggedIn = "isAuthenticated" in locals ? (locals.isAuthenticated as boolean) : false;
+
   if (!isLoggedIn) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }

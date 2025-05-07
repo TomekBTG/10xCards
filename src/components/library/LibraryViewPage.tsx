@@ -48,17 +48,20 @@ export function useFlashcards() {
   }, []);
 
   // Obsługa zaznaczenia/odznaczenia wszystkich fiszek
-  const handleSelectAll = useCallback((selected: boolean) => {
-    // Aktualizacja stanu fiszek
-    setFlashcards((prev) => prev.map((flashcard) => ({ ...flashcard, selected })));
+  const handleSelectAll = useCallback(
+    (selected: boolean) => {
+      // Aktualizacja stanu fiszek
+      setFlashcards((prev) => prev.map((flashcard) => ({ ...flashcard, selected })));
 
-    // Aktualizacja listy zaznaczonych fiszek
-    if (selected) {
-      setSelectedFlashcards(flashcards.map((f) => f.id));
-    } else {
-      setSelectedFlashcards([]);
-    }
-  }, [flashcards]);
+      // Aktualizacja listy zaznaczonych fiszek
+      if (selected) {
+        setSelectedFlashcards(flashcards.map((f) => f.id));
+      } else {
+        setSelectedFlashcards([]);
+      }
+    },
+    [flashcards]
+  );
 
   // Obsługa aktualizacji pojedynczej fiszki
   const handleFlashcardUpdate = useCallback(async (id: string, updatedData: Partial<FlashcardDTO>) => {
@@ -123,7 +126,7 @@ export function useFlashcards() {
     handleFlashcardSelect,
     handleSelectAll,
     handleFlashcardUpdate,
-    handleFlashcardDelete
+    handleFlashcardDelete,
   };
 }
 
@@ -147,7 +150,7 @@ export function usePagination() {
     pagination,
     setPagination,
     handlePageChange,
-    handleLimitChange
+    handleLimitChange,
   };
 }
 
@@ -162,7 +165,7 @@ export function useFilters() {
   return {
     filters,
     setFilters,
-    handleFilterChange
+    handleFilterChange,
   };
 }
 
@@ -220,7 +223,7 @@ export function useFlashcardsApi(
 
       // Aktualizacja danych i paginacji
       setFlashcards(data.data.map((flashcard) => ({ ...flashcard, selected: false })));
-      setPagination(prev => ({ ...prev, total: data.pagination.total }));
+      setPagination((prev) => ({ ...prev, total: data.pagination.total }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Wystąpił błąd podczas ładowania fiszek");
       console.error("Error fetching flashcards:", err);
@@ -242,45 +245,48 @@ export function useBulkOperations(
   setError: React.Dispatch<React.SetStateAction<string | null>>
 ) {
   // Obsługa aktualizacji statusu dla wielu fiszek
-  const handleBulkStatusUpdate = useCallback(async (status: FlashcardStatus) => {
-    if (selectedFlashcards.length === 0) return;
+  const handleBulkStatusUpdate = useCallback(
+    async (status: FlashcardStatus) => {
+      if (selectedFlashcards.length === 0) return;
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      // Dla każdej zaznaczonej fiszki wywołujemy API update
-      const updatePromises = selectedFlashcards.map((id) => {
-        const flashcard = flashcards.find((f) => f.id === id);
-        if (!flashcard) return Promise.resolve();
+      try {
+        // Dla każdej zaznaczonej fiszki wywołujemy API update
+        const updatePromises = selectedFlashcards.map((id) => {
+          const flashcard = flashcards.find((f) => f.id === id);
+          if (!flashcard) return Promise.resolve();
 
-        return fetch(`/api/flashcards/${id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            front: flashcard.front,
-            back: flashcard.back,
-            status,
-          }),
+          return fetch(`/api/flashcards/${id}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              front: flashcard.front,
+              back: flashcard.back,
+              status,
+            }),
+          });
         });
-      });
 
-      await Promise.all(updatePromises);
+        await Promise.all(updatePromises);
 
-      // Ponowne pobranie danych po aktualizacji
-      await fetchFlashcards();
+        // Ponowne pobranie danych po aktualizacji
+        await fetchFlashcards();
 
-      // Reset zaznaczonych fiszek
-      setSelectedFlashcards([]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Wystąpił błąd podczas aktualizacji fiszek");
-      console.error("Error updating flashcards:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedFlashcards, flashcards, fetchFlashcards, setSelectedFlashcards, setIsLoading, setError]);
+        // Reset zaznaczonych fiszek
+        setSelectedFlashcards([]);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Wystąpił błąd podczas aktualizacji fiszek");
+        console.error("Error updating flashcards:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [selectedFlashcards, flashcards, fetchFlashcards, setSelectedFlashcards, setIsLoading, setError]
+  );
 
   // Obsługa usuwania wielu fiszek
   const handleBulkDelete = useCallback(async () => {
@@ -334,17 +340,17 @@ const LibraryViewPage = () => {
     handleFlashcardSelect,
     handleSelectAll,
     handleFlashcardUpdate,
-    handleFlashcardDelete
+    handleFlashcardDelete,
   } = useFlashcards();
-  
+
   const { pagination, setPagination, handlePageChange, handleLimitChange } = usePagination();
   const { filters, setFilters, handleFilterChange } = useFilters();
-  
+
   // Rejestracja efektu resetującego paginację przy zmianie filtrów
   useEffect(() => {
-    setPagination(prev => ({ ...prev, page: 1 }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
   }, [filters, setPagination]);
-  
+
   const { fetchFlashcards } = useFlashcardsApi(
     filters,
     pagination,
@@ -353,7 +359,7 @@ const LibraryViewPage = () => {
     setIsLoading,
     setError
   );
-  
+
   const { handleBulkStatusUpdate, handleBulkDelete } = useBulkOperations(
     selectedFlashcards,
     flashcards,
@@ -379,10 +385,7 @@ const LibraryViewPage = () => {
         </div>
       )}
 
-      <FilterPanel 
-        filters={filters} 
-        onFilterChange={handleFilterChange} 
-      />
+      <FilterPanel filters={filters} onFilterChange={handleFilterChange} />
 
       <BulkActionsPanel
         selectedCount={selectedFlashcards.length}

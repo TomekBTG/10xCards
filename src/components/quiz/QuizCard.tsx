@@ -40,9 +40,7 @@ const QuizCard = React.memo(function QuizCard({ card }: QuizCardProps) {
           <div
             className={cn(
               "px-4 py-2 text-sm font-medium text-white text-center border-t border-gray-200 dark:border-zinc-700",
-              card.userAnswer === "correct" 
-                ? "bg-green-500 dark:bg-green-600" 
-                : "bg-red-500 dark:bg-red-600"
+              card.userAnswer === "correct" ? "bg-green-500 dark:bg-green-600" : "bg-red-500 dark:bg-red-600"
             )}
           >
             {card.userAnswer === "correct" ? "Poprawna odpowiedź" : "Niepoprawna odpowiedź"}

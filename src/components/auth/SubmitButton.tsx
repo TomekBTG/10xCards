@@ -19,7 +19,7 @@ export const SubmitButton = memo(function SubmitButton({
         w-full flex justify-center items-center gap-2 px-4 py-3 
         rounded-md bg-blue-600 text-white font-medium 
         transition-colors duration-200 ease-in-out
-        ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'} 
+        ${isDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"} 
         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-zinc-900
       `}
     >
@@ -31,14 +31,7 @@ export const SubmitButton = memo(function SubmitButton({
           viewBox="0 0 24 24"
           aria-hidden="true"
         >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          ></circle>
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
           <path
             className="opacity-75"
             fill="currentColor"

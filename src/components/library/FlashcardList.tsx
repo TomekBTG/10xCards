@@ -19,16 +19,16 @@ interface FlashcardListProps {
   onLimitChange: (limit: number) => void;
 }
 
-const FlashcardList = ({ 
-  flashcards, 
-  isLoading, 
-  pagination, 
-  onSelectFlashcard, 
-  onSelectAll, 
-  onUpdateFlashcard, 
+const FlashcardList = ({
+  flashcards,
+  isLoading,
+  pagination,
+  onSelectFlashcard,
+  onSelectAll,
+  onUpdateFlashcard,
   onDeleteFlashcard,
   onPageChange,
-  onLimitChange
+  onLimitChange,
 }: FlashcardListProps) => {
   // Sprawdzenie, czy wszystkie fiszki są zaznaczone
   const allSelected = flashcards.length > 0 && flashcards.every((f) => f.selected);

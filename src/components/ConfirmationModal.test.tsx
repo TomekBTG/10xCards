@@ -1,61 +1,59 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import ConfirmationModal from './ConfirmationModal';
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import ConfirmationModal from "./ConfirmationModal";
 
-describe('ConfirmationModal', () => {
+describe("ConfirmationModal", () => {
   const defaultProps = {
     isOpen: true,
-    title: 'Potwierdź akcję',
-    description: 'Czy na pewno chcesz wykonać tę akcję?',
-    confirmLabel: 'Potwierdź',
-    cancelLabel: 'Anuluj',
+    title: "Potwierdź akcję",
+    description: "Czy na pewno chcesz wykonać tę akcję?",
+    confirmLabel: "Potwierdź",
+    cancelLabel: "Anuluj",
     onConfirm: vi.fn(),
     onCancel: vi.fn(),
   };
 
-  it('nie renderuje nic, gdy isOpen jest false', () => {
-    const { container } = render(
-      <ConfirmationModal {...defaultProps} isOpen={false} />
-    );
+  it("nie renderuje nic, gdy isOpen jest false", () => {
+    const { container } = render(<ConfirmationModal {...defaultProps} isOpen={false} />);
     expect(container.firstChild).toBeNull();
   });
 
-  it('renderuje tytuł i opis', () => {
+  it("renderuje tytuł i opis", () => {
     render(<ConfirmationModal {...defaultProps} />);
-    
-    expect(screen.getByText('Potwierdź akcję')).toBeInTheDocument();
-    expect(screen.getByText('Czy na pewno chcesz wykonać tę akcję?')).toBeInTheDocument();
+
+    expect(screen.getByText("Potwierdź akcję")).toBeInTheDocument();
+    expect(screen.getByText("Czy na pewno chcesz wykonać tę akcję?")).toBeInTheDocument();
   });
 
-  it('renderuje przyciski z odpowiednimi etykietami', () => {
+  it("renderuje przyciski z odpowiednimi etykietami", () => {
     render(<ConfirmationModal {...defaultProps} />);
-    
-    expect(screen.getByText('Potwierdź')).toBeInTheDocument();
-    expect(screen.getByText('Anuluj')).toBeInTheDocument();
+
+    expect(screen.getByText("Potwierdź")).toBeInTheDocument();
+    expect(screen.getByText("Anuluj")).toBeInTheDocument();
   });
 
-  it('wywołuje onConfirm po kliknięciu przycisku potwierdzenia', () => {
+  it("wywołuje onConfirm po kliknięciu przycisku potwierdzenia", () => {
     render(<ConfirmationModal {...defaultProps} />);
-    
-    fireEvent.click(screen.getByText('Potwierdź'));
+
+    fireEvent.click(screen.getByText("Potwierdź"));
     expect(defaultProps.onConfirm).toHaveBeenCalledTimes(1);
   });
 
-  it('wywołuje onCancel po kliknięciu przycisku anulowania', () => {
+  it("wywołuje onCancel po kliknięciu przycisku anulowania", () => {
     render(<ConfirmationModal {...defaultProps} />);
-    
-    fireEvent.click(screen.getByText('Anuluj'));
+
+    fireEvent.click(screen.getByText("Anuluj"));
     expect(defaultProps.onCancel).toHaveBeenCalledTimes(1);
   });
 
-  it('renderuje dodatkową zawartość przekazaną jako children', () => {
+  it("renderuje dodatkową zawartość przekazaną jako children", () => {
     render(
       <ConfirmationModal {...defaultProps}>
         <div data-testid="child-content">Dodatkowa zawartość</div>
       </ConfirmationModal>
     );
-    
-    expect(screen.getByTestId('child-content')).toBeInTheDocument();
-    expect(screen.getByText('Dodatkowa zawartość')).toBeInTheDocument();
+
+    expect(screen.getByTestId("child-content")).toBeInTheDocument();
+    expect(screen.getByText("Dodatkowa zawartość")).toBeInTheDocument();
   });
-}); 
+});

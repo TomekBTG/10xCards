@@ -1,6 +1,6 @@
 /**
  * OpenRouter Service Types
- * 
+ *
  * Typy używane przez serwis integrujący z API OpenRouter.
  */
 
@@ -30,7 +30,7 @@ export interface JsonSchema {
 }
 
 export interface ResponseFormat {
-  type: 'json_schema' | 'text';
+  type: "json_schema" | "text";
   json_schema?: {
     name: string;
     strict: boolean;
@@ -40,7 +40,7 @@ export interface ResponseFormat {
 
 export interface RequestPayload {
   messages: {
-    role: 'system' | 'user' | 'assistant';
+    role: "system" | "user" | "assistant";
     content: string;
   }[];
   model: string;
@@ -65,16 +65,19 @@ export class OpenRouterError extends Error {
   public readonly responseData?: any;
   public readonly requestData?: any;
 
-  constructor(message: string, options?: {
-    statusCode?: number;
-    responseData?: any;
-    requestData?: any;
-    cause?: Error;
-  }) {
+  constructor(
+    message: string,
+    options?: {
+      statusCode?: number;
+      responseData?: any;
+      requestData?: any;
+      cause?: Error;
+    }
+  ) {
     super(message, { cause: options?.cause });
-    this.name = 'OpenRouterError';
+    this.name = "OpenRouterError";
     this.statusCode = options?.statusCode;
     this.responseData = options?.responseData;
     this.requestData = options?.requestData;
   }
-} 
+}

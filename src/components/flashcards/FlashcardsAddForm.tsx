@@ -132,27 +132,30 @@ const useAddFlashcardsForm = () => {
   }, []);
 
   // Aktualizuje fiszkę po indeksie
-  const updateFlashcard = useCallback((index: number, updatedFlashcard: FormFlashcard) => {
-    setFormState((prevState) => {
-      const updatedFlashcards = [...prevState.flashcards];
-      updatedFlashcards[index] = updatedFlashcard;
+  const updateFlashcard = useCallback(
+    (index: number, updatedFlashcard: FormFlashcard) => {
+      setFormState((prevState) => {
+        const updatedFlashcards = [...prevState.flashcards];
+        updatedFlashcards[index] = updatedFlashcard;
 
-      // Jeśli poprawiono błędy, usuń komunikaty błędów dla tej fiszki
-      if (prevState.showValidationErrors) {
-        const revalidatedFlashcard = validateFlashcards([updatedFlashcard])[0];
-        if (areAllFlashcardsValid([revalidatedFlashcard])) {
-          updatedFlashcard.errors = {};
-        } else {
-          updatedFlashcard.errors = revalidatedFlashcard.errors;
+        // Jeśli poprawiono błędy, usuń komunikaty błędów dla tej fiszki
+        if (prevState.showValidationErrors) {
+          const revalidatedFlashcard = validateFlashcards([updatedFlashcard])[0];
+          if (areAllFlashcardsValid([revalidatedFlashcard])) {
+            updatedFlashcard.errors = {};
+          } else {
+            updatedFlashcard.errors = revalidatedFlashcard.errors;
+          }
         }
-      }
 
-      return {
-        ...prevState,
-        flashcards: updatedFlashcards,
-      };
-    });
-  }, [validateFlashcards, areAllFlashcardsValid]);
+        return {
+          ...prevState,
+          flashcards: updatedFlashcards,
+        };
+      });
+    },
+    [validateFlashcards, areAllFlashcardsValid]
+  );
 
   // Przełącza widok zapisanych fiszek
   const toggleSavedFlashcards = useCallback(() => {
@@ -167,10 +170,10 @@ const useAddFlashcardsForm = () => {
     // Walidacja
     const validatedFlashcards = validateFlashcards(formState.flashcards);
 
-    setFormState((prev) => ({ 
-      ...prev, 
+    setFormState((prev) => ({
+      ...prev,
       flashcards: validatedFlashcards,
-      showValidationErrors: true 
+      showValidationErrors: true,
     }));
 
     if (!areAllFlashcardsValid(validatedFlashcards)) {

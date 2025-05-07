@@ -233,7 +233,9 @@ export function FlashcardsReview({ flashcards, generationLog, onReset }: Flashca
           )}
 
           {saveError && (
-            <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-md text-red-700 dark:text-red-400">{saveError}</div>
+            <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-md text-red-700 dark:text-red-400">
+              {saveError}
+            </div>
           )}
 
           {saveSuccess && (
@@ -298,7 +300,9 @@ export function FlashcardsReview({ flashcards, generationLog, onReset }: Flashca
 
           {displayedCardsCount === 0 ? (
             <div className="text-center p-8 bg-gray-50 dark:bg-gray-800/50 rounded-md">
-              <p className="text-gray-500 dark:text-gray-400">Nie znaleziono fiszek spełniających kryteria filtrowania.</p>
+              <p className="text-gray-500 dark:text-gray-400">
+                Nie znaleziono fiszek spełniających kryteria filtrowania.
+              </p>
               <Button variant="link" onClick={handleResetFilters}>
                 Resetuj filtry
               </Button>

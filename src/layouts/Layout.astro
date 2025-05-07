@@ -11,10 +11,7 @@ interface Props {
 const { title } = Astro.props;
 
 // Wykorzystaj stan autoryzacji z middleware z fallbackiem w razie braku wartości
-const isLoggedIn = 'isAuthenticated' in Astro.locals 
-  ? Astro.locals.isAuthenticated as boolean 
-  : false;
-
+const isLoggedIn = "isAuthenticated" in Astro.locals ? (Astro.locals.isAuthenticated as boolean) : false;
 ---
 
 <!doctype html>
@@ -23,20 +20,20 @@ const isLoggedIn = 'isAuthenticated' in Astro.locals
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <title>{title} | 10xCards</title>
     <script is:inline>
       // Inicjalizacja trybu ciemnego/jasnego
-      const theme = localStorage.getItem('theme');
-      if (theme === 'light') {
-        document.documentElement.classList.remove('dark');
-        document.documentElement.classList.add('light');
+      const theme = localStorage.getItem("theme");
+      if (theme === "light") {
+        document.documentElement.classList.remove("dark");
+        document.documentElement.classList.add("light");
       } else {
         // Domyślnie ciemny motyw
-        document.documentElement.classList.remove('light');
-        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove("light");
+        document.documentElement.classList.add("dark");
       }
     </script>
   </head>
@@ -54,7 +51,10 @@ const isLoggedIn = 'isAuthenticated' in Astro.locals
               <UserMenu client:load />
             </li>
             <li data-auth-logged-out style={isLoggedIn ? "display: none;" : ""}>
-              <a href="/login" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-medium transition">
+              <a
+                href="/login"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-medium transition"
+              >
                 Zaloguj się
               </a>
             </li>

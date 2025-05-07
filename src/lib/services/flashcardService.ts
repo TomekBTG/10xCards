@@ -219,9 +219,7 @@ export const flashcardService = {
       };
     } catch (error) {
       console.error("Error fetching flashcards:", error);
-      throw error instanceof Error
-        ? error
-        : new Error("Wystąpił nieoczekiwany błąd podczas pobierania fiszek");
+      throw error instanceof Error ? error : new Error("Wystąpił nieoczekiwany błąd podczas pobierania fiszek");
     }
   },
 

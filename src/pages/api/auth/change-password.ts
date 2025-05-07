@@ -38,7 +38,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const data = validationResult.data as UpdatePasswordCommand;
 
     // Sprawdź uwierzytelnienie z middleware
-    const isLoggedIn = 'isAuthenticated' in locals ? locals.isAuthenticated as boolean : false;
+    const isLoggedIn = "isAuthenticated" in locals ? (locals.isAuthenticated as boolean) : false;
 
     if (!isLoggedIn) {
       return new Response(
@@ -56,7 +56,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Pobierz dane użytkownika
     const { data: userData } = await supabaseClient.auth.getUser();
     const userEmail = userData.user?.email;
-    
+
     if (!userEmail) {
       return new Response(
         JSON.stringify({

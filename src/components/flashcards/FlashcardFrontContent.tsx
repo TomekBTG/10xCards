@@ -30,7 +30,9 @@ export function FlashcardFrontContent({ value, onChange, error }: FlashcardFront
         <Label htmlFor="front-content" className="text-sm font-medium">
           Przednia strona (pytanie)
         </Label>
-        <span className={`text-xs ${isLimitExceeded ? "text-red-500 dark:text-red-400" : "text-gray-500 dark:text-gray-400"}`}>
+        <span
+          className={`text-xs ${isLimitExceeded ? "text-red-500 dark:text-red-400" : "text-gray-500 dark:text-gray-400"}`}
+        >
           {remainingChars} znaków pozostało
         </span>
       </div>

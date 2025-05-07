@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface NavItem {
   title: string;
@@ -10,29 +10,29 @@ interface NavItem {
 const NavigationPanel: React.FC = () => {
   const navItems: NavItem[] = [
     {
-      title: 'Generuj fiszki',
-      description: 'Utwórz nowe fiszki za pomocą AI',
-      icon: '🤖',
-      path: '/generate'
+      title: "Generuj fiszki",
+      description: "Utwórz nowe fiszki za pomocą AI",
+      icon: "🤖",
+      path: "/generate",
     },
     {
-      title: 'Dodaj fiszki',
-      description: 'Dodaj własne fiszki ręcznie',
-      path: '/flashcards/add',
-      icon: '✏️'
+      title: "Dodaj fiszki",
+      description: "Dodaj własne fiszki ręcznie",
+      path: "/flashcards/add",
+      icon: "✏️",
     },
     {
-      title: 'Biblioteka',
-      description: 'Przeglądaj swoją kolekcję fiszek',
-      path: '/library',
-      icon: '📚'
+      title: "Biblioteka",
+      description: "Przeglądaj swoją kolekcję fiszek",
+      path: "/library",
+      icon: "📚",
     },
     {
-      title: 'Quiz',
-      description: 'Sprawdź swoją wiedzę',
-      path: '/quiz',
-      icon: '🧠'
-    }
+      title: "Quiz",
+      description: "Sprawdź swoją wiedzę",
+      path: "/quiz",
+      icon: "🧠",
+    },
   ];
 
   return (
@@ -40,7 +40,7 @@ const NavigationPanel: React.FC = () => {
       <h2 className="text-xl font-semibold mb-5 text-white">Nawigacja</h2>
       <div className="grid gap-4">
         {navItems.map((item) => (
-          <a 
+          <a
             key={item.path}
             href={item.path}
             className="flex items-start gap-4 p-4 rounded-lg bg-zinc-800/30 border border-zinc-800/50 hover:bg-zinc-800/70 transition-all duration-300"

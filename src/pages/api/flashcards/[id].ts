@@ -13,7 +13,7 @@ interface LocalsWithSupabase {
 // export const GET: APIRoute = async ({ params, locals }) => {
 export const GET: APIRoute = async ({ params, locals }) => {
   // Sprawdź uwierzytelnienie z middleware
-  const isLoggedIn = 'isAuthenticated' in locals ? locals.isAuthenticated as boolean : false;
+  const isLoggedIn = "isAuthenticated" in locals ? (locals.isAuthenticated as boolean) : false;
 
   if (!isLoggedIn) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
@@ -52,7 +52,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
 // ------------------ PATCH Endpoint (Update Flashcard) ------------------
 export const PATCH: APIRoute = async ({ params, request, locals }) => {
   // Sprawdź uwierzytelnienie z middleware
-  const isLoggedIn = 'isAuthenticated' in locals ? locals.isAuthenticated as boolean : false;
+  const isLoggedIn = "isAuthenticated" in locals ? (locals.isAuthenticated as boolean) : false;
 
   if (!isLoggedIn) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
@@ -123,7 +123,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
 // ------------------ DELETE Endpoint (Delete Flashcard) ------------------
 export const DELETE: APIRoute = async ({ params, locals }) => {
   // Sprawdź uwierzytelnienie z middleware
-  const isLoggedIn = 'isAuthenticated' in locals ? locals.isAuthenticated as boolean : false;
+  const isLoggedIn = "isAuthenticated" in locals ? (locals.isAuthenticated as boolean) : false;
 
   if (!isLoggedIn) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
@@ -161,7 +161,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
 // ------------------ PUT Endpoint (Update Flashcard) - identyczne jak PATCH ------------------
 export const PUT: APIRoute = async ({ params, request, locals }) => {
   // Sprawdź uwierzytelnienie z middleware
-  const isLoggedIn = 'isAuthenticated' in locals ? locals.isAuthenticated as boolean : false;
+  const isLoggedIn = "isAuthenticated" in locals ? (locals.isAuthenticated as boolean) : false;
 
   if (!isLoggedIn) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });

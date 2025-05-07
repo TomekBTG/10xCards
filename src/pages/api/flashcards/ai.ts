@@ -28,7 +28,7 @@ const generateFlashcardsSchema = z.object({
 export async function POST({ request, locals }: APIContext): Promise<Response> {
   try {
     // Sprawdź uwierzytelnienie z middleware
-    const isLoggedIn = 'isAuthenticated' in locals ? locals.isAuthenticated as boolean : false;
+    const isLoggedIn = "isAuthenticated" in locals ? (locals.isAuthenticated as boolean) : false;
 
     if (!isLoggedIn) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });

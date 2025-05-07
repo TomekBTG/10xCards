@@ -1,6 +1,6 @@
 // Import the Database type from the database models
 import type { Database } from "./db/database.types";
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 // --------------------------------------------------
 // DTO and Command Model Definitions for API

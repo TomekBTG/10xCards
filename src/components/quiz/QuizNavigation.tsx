@@ -12,10 +12,7 @@ const QuizNavigation: React.FC<QuizNavigationProps> = ({ revealed, onReveal, onM
   if (!revealed) {
     return (
       <div className="flex justify-center">
-        <Button 
-          onClick={onReveal} 
-          className="px-8 bg-blue-600 hover:bg-blue-700 text-white"
-        >
+        <Button onClick={onReveal} className="px-8 bg-blue-600 hover:bg-blue-700 text-white">
           Pokaż odpowiedź
         </Button>
       </div>

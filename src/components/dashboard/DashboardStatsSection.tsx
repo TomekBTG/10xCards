@@ -32,23 +32,9 @@ const DashboardStatsSection: React.FC = () => {
           icon={<span>📚</span>}
           onClick={() => console.log("Clicked on flashcards stat")}
         />
-        <DashboardStatsCard
-          title="Sesje nauki"
-          value="28"
-          trend={12}
-          icon={<span>🧠</span>}
-        />
-        <DashboardStatsCard
-          title="Najlepszy wynik"
-          value="92%"
-          icon={<span>🏆</span>}
-        />
-        <DashboardStatsCard
-          title="Skuteczność nauki"
-          value="78%"
-          trend={-3}
-          icon={<span>📈</span>}
-        />
+        <DashboardStatsCard title="Sesje nauki" value="28" trend={12} icon={<span>🧠</span>} />
+        <DashboardStatsCard title="Najlepszy wynik" value="92%" icon={<span>🏆</span>} />
+        <DashboardStatsCard title="Skuteczność nauki" value="78%" trend={-3} icon={<span>📈</span>} />
       </div>
     </div>
   );

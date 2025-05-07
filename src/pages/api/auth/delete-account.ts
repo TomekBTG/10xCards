@@ -30,7 +30,7 @@ export const DELETE: APIRoute = async ({ request, locals }) => {
     const data = validationResult.data as { password: string };
 
     // Sprawdź uwierzytelnienie z middleware
-    const isLoggedIn = 'isAuthenticated' in locals ? locals.isAuthenticated as boolean : false;
+    const isLoggedIn = "isAuthenticated" in locals ? (locals.isAuthenticated as boolean) : false;
 
     if (!isLoggedIn) {
       return new Response(

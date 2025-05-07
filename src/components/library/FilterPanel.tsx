@@ -23,24 +23,14 @@ type DifficultyType = "easy" | "medium" | "hard" | "all";
 
 const FilterPanel = ({ filters = {}, onFilterChange }: FilterPanelProps) => {
   // Stan filtrów
-  const [status, setStatus] = useState<ExtendedFlashcardStatus>(
-    filters.status ? filters.status : "all"
-  );
-  const [categoryId, setCategoryId] = useState<string>(
-    filters.categoryId ? filters.categoryId : "all"
-  );
+  const [status, setStatus] = useState<ExtendedFlashcardStatus>(filters.status ? filters.status : "all");
+  const [categoryId, setCategoryId] = useState<string>(filters.categoryId ? filters.categoryId : "all");
   const [difficulty, setDifficulty] = useState<DifficultyType>(
-    filters.difficulty ? filters.difficulty as DifficultyType : "all"
+    filters.difficulty ? (filters.difficulty as DifficultyType) : "all"
   );
-  const [createdBefore, setCreatedBefore] = useState<Date | undefined>(
-    filters.createdBefore
-  );
-  const [createdAfter, setCreatedAfter] = useState<Date | undefined>(
-    filters.createdAfter
-  );
-  const [searchTerm, setSearchTerm] = useState<string>(
-    filters.searchTerm || ""
-  );
+  const [createdBefore, setCreatedBefore] = useState<Date | undefined>(filters.createdBefore);
+  const [createdAfter, setCreatedAfter] = useState<Date | undefined>(filters.createdAfter);
+  const [searchTerm, setSearchTerm] = useState<string>(filters.searchTerm || "");
   // Stan dla przechowywania dostępnych kategorii
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
 
@@ -57,12 +47,12 @@ const FilterPanel = ({ filters = {}, onFilterChange }: FilterPanelProps) => {
 
     fetchCategories();
   }, []);
-  
+
   // Aktualizacja stanów lokalnych gdy zmieniają się przekazane filtry
   useEffect(() => {
     setStatus(filters.status ? filters.status : "all");
     setCategoryId(filters.categoryId ? filters.categoryId : "all");
-    setDifficulty(filters.difficulty ? filters.difficulty as DifficultyType : "all");
+    setDifficulty(filters.difficulty ? (filters.difficulty as DifficultyType) : "all");
     setCreatedBefore(filters.createdBefore);
     setCreatedAfter(filters.createdAfter);
     setSearchTerm(filters.searchTerm || "");
@@ -150,17 +140,19 @@ const FilterPanel = ({ filters = {}, onFilterChange }: FilterPanelProps) => {
           </Button>
         </div>
       </div>
-      
+
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
           {/* Status fiszki */}
           <div className="space-y-2">
-            <Label htmlFor="status" className="text-gray-700 dark:text-gray-300">Status</Label>
-            <Select
-              value={status}
-              onValueChange={(value) => handleFilterChange("status", value)}
-            >
-              <SelectTrigger id="status" className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100">
+            <Label htmlFor="status" className="text-gray-700 dark:text-gray-300">
+              Status
+            </Label>
+            <Select value={status} onValueChange={(value) => handleFilterChange("status", value)}>
+              <SelectTrigger
+                id="status"
+                className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100"
+              >
                 <SelectValue placeholder="Wybierz status" />
               </SelectTrigger>
               <SelectContent className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100">
@@ -174,12 +166,14 @@ const FilterPanel = ({ filters = {}, onFilterChange }: FilterPanelProps) => {
 
           {/* Kategoria */}
           <div className="space-y-2">
-            <Label htmlFor="category" className="text-gray-700 dark:text-gray-300">Kategoria</Label>
-            <Select
-              value={categoryId}
-              onValueChange={(value) => handleFilterChange("categoryId", value)}
-            >
-              <SelectTrigger id="category" className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100">
+            <Label htmlFor="category" className="text-gray-700 dark:text-gray-300">
+              Kategoria
+            </Label>
+            <Select value={categoryId} onValueChange={(value) => handleFilterChange("categoryId", value)}>
+              <SelectTrigger
+                id="category"
+                className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100"
+              >
                 <SelectValue placeholder="Wybierz kategorię" />
               </SelectTrigger>
               <SelectContent className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100">
@@ -195,12 +189,14 @@ const FilterPanel = ({ filters = {}, onFilterChange }: FilterPanelProps) => {
 
           {/* Poziom trudności */}
           <div className="space-y-2">
-            <Label htmlFor="difficulty" className="text-gray-700 dark:text-gray-300">Poziom trudności</Label>
-            <Select
-              value={difficulty}
-              onValueChange={(value) => handleFilterChange("difficulty", value)}
-            >
-              <SelectTrigger id="difficulty" className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100">
+            <Label htmlFor="difficulty" className="text-gray-700 dark:text-gray-300">
+              Poziom trudności
+            </Label>
+            <Select value={difficulty} onValueChange={(value) => handleFilterChange("difficulty", value)}>
+              <SelectTrigger
+                id="difficulty"
+                className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100"
+              >
                 <SelectValue placeholder="Wybierz poziom trudności" />
               </SelectTrigger>
               <SelectContent className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-100">
@@ -214,7 +210,9 @@ const FilterPanel = ({ filters = {}, onFilterChange }: FilterPanelProps) => {
 
           {/* Data utworzenia - od */}
           <div className="space-y-2">
-            <Label htmlFor="dateFrom" className="text-gray-700 dark:text-gray-300">Data utworzenia - od</Label>
+            <Label htmlFor="dateFrom" className="text-gray-700 dark:text-gray-300">
+              Data utworzenia - od
+            </Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -226,11 +224,7 @@ const FilterPanel = ({ filters = {}, onFilterChange }: FilterPanelProps) => {
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {createdAfter ? (
-                    format(createdAfter, "PP", { locale: pl })
-                  ) : (
-                    <span>Wybierz datę</span>
-                  )}
+                  {createdAfter ? format(createdAfter, "PP", { locale: pl }) : <span>Wybierz datę</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0 bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700">
@@ -247,7 +241,9 @@ const FilterPanel = ({ filters = {}, onFilterChange }: FilterPanelProps) => {
 
           {/* Data utworzenia - do */}
           <div className="space-y-2">
-            <Label htmlFor="dateTo" className="text-gray-700 dark:text-gray-300">Data utworzenia - do</Label>
+            <Label htmlFor="dateTo" className="text-gray-700 dark:text-gray-300">
+              Data utworzenia - do
+            </Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -259,11 +255,7 @@ const FilterPanel = ({ filters = {}, onFilterChange }: FilterPanelProps) => {
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {createdBefore ? (
-                    format(createdBefore, "PP", { locale: pl })
-                  ) : (
-                    <span>Wybierz datę</span>
-                  )}
+                  {createdBefore ? format(createdBefore, "PP", { locale: pl }) : <span>Wybierz datę</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0 bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700">
@@ -280,7 +272,9 @@ const FilterPanel = ({ filters = {}, onFilterChange }: FilterPanelProps) => {
 
           {/* Wyszukiwarka */}
           <div className="space-y-2">
-            <Label htmlFor="search" className="text-gray-700 dark:text-gray-300">Szukaj</Label>
+            <Label htmlFor="search" className="text-gray-700 dark:text-gray-300">
+              Szukaj
+            </Label>
             <Input
               id="search"
               type="text"
@@ -293,7 +287,7 @@ const FilterPanel = ({ filters = {}, onFilterChange }: FilterPanelProps) => {
         </div>
 
         <div className="flex justify-end mt-4">
-          <Button 
+          <Button
             onClick={applyFilters}
             className="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
           >

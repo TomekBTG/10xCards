@@ -1,5 +1,5 @@
-import { expect } from '@playwright/test';
-import type { Page, Locator } from '@playwright/test';
+import { expect } from "@playwright/test";
+import type { Page, Locator } from "@playwright/test";
 
 /**
  * Bazowa klasa dla wszystkich klas Page Object
@@ -15,7 +15,7 @@ export class BasePage {
   /**
    * Przechodzi do podanej ścieżki URL
    */
-  async goto(path: string = '/'): Promise<void> {
+  async goto(path: string = "/"): Promise<void> {
     await this.page.goto(path);
   }
 
@@ -23,7 +23,7 @@ export class BasePage {
    * Oczekuje na załadowanie strony
    */
   async waitForPageLoad(): Promise<void> {
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState("networkidle");
   }
 
   /**
@@ -37,7 +37,7 @@ export class BasePage {
    * Wykonuje zrzut ekranu i weryfikuje go
    */
   async verifyScreenshot(name: string, options?: any): Promise<void> {
-    console.log('verifyScreenshot', name, options);
+    console.log("verifyScreenshot", name, options);
     await expect(this.page).toHaveScreenshot(`${name}.png`, options);
   }
 
@@ -45,7 +45,7 @@ export class BasePage {
    * Pobiera tekst z elementu
    */
   async getText(locator: Locator): Promise<string> {
-    return await locator.textContent() || '';
+    return (await locator.textContent()) || "";
   }
 
   /**
@@ -61,4 +61,4 @@ export class BasePage {
   async fill(locator: Locator, text: string): Promise<void> {
     await locator.fill(text);
   }
-} 
+}
