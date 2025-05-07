@@ -31,7 +31,6 @@ export function FlashcardCard({ flashcard, onAccept, onReject, onEdit, onChangeS
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard" | null>(
     flashcard.difficulty as "easy" | "medium" | "hard" | null
   );
-  const [hasChanges, setHasChanges] = useState(false);
 
   // Pobranie kategorii przy montowaniu komponentu
   useEffect(() => {
@@ -47,31 +46,31 @@ export function FlashcardCard({ flashcard, onAccept, onReject, onEdit, onChangeS
     fetchCategories();
   }, []);
 
-  // Prepare category data for save
-  const getCategoryData = () => {
-    if (isAddingCategory && newCategoryName.trim()) {
-      const categoryId = `new-${Date.now()}`;
-      return {
-        categoryId,
-        categoryName: newCategoryName.trim(),
-      };
-    } else if (selectedCategoryId) {
-      const selectedCategory = categories.find((cat) => cat.id === selectedCategoryId);
-      if (selectedCategory) {
-        return {
-          categoryId: selectedCategory.id,
-          categoryName: selectedCategory.name,
-        };
-      }
-    }
-    return {
-      categoryId: null,
-      categoryName: null,
-    };
-  };
-
   // Sprawdzanie, czy są zmiany w porównaniu do oryginału
   useEffect(() => {
+    // Prepare category data for save
+    const getCategoryData = () => {
+      if (isAddingCategory && newCategoryName.trim()) {
+        const categoryId = `new-${Date.now()}`;
+        return {
+          categoryId,
+          categoryName: newCategoryName.trim(),
+        };
+      } else if (selectedCategoryId) {
+        const selectedCategory = categories.find((cat) => cat.id === selectedCategoryId);
+        if (selectedCategory) {
+          return {
+            categoryId: selectedCategory.id,
+            categoryName: selectedCategory.name,
+          };
+        }
+      }
+      return {
+        categoryId: null,
+        categoryName: null,
+      };
+    };
+
     const categoryChanged = isAddingCategory
       ? Boolean(newCategoryName.trim()) && newCategoryName !== flashcard.category_name
       : selectedCategoryId !== flashcard.category_id;
@@ -87,8 +86,6 @@ export function FlashcardCard({ flashcard, onAccept, onReject, onEdit, onChangeS
       const { categoryId, categoryName } = getCategoryData();
       onEdit(frontText, backText, categoryId || undefined, categoryName || undefined, difficulty);
     }
-
-    setHasChanges(hasAnyChanges);
   }, [
     frontText,
     backText,
@@ -99,6 +96,7 @@ export function FlashcardCard({ flashcard, onAccept, onReject, onEdit, onChangeS
     flashcard,
     onEdit,
     flashcard.is_saved,
+    categories,
   ]);
 
   // Obsługa przełączania między wyborem kategorii a dodawaniem nowej

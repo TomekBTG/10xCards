@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
-import { expect, afterEach, beforeAll, afterAll, vi } from "vitest";
+import { afterEach, beforeAll, afterAll, vi } from "vitest";
 import { setupServer } from "msw/node";
 
 // Globalna konfiguracja dla testów

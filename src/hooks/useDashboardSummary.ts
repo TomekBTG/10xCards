@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { DashboardSummaryDTO } from "@/types/dashboard";
 
 interface UseDashboardSummaryOptions {
@@ -11,7 +11,7 @@ export function useDashboardSummary(options: UseDashboardSummaryOptions = {}) {
   const [error, setError] = useState<string | null>(null);
   const { limit = 5 } = options;
 
-  async function fetchSummaryData() {
+  const fetchSummaryData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -41,11 +41,11 @@ export function useDashboardSummary(options: UseDashboardSummaryOptions = {}) {
       setError(err instanceof Error ? err.message : "Nie udało się pobrać danych podsumowania.");
       setIsLoading(false);
     }
-  }
+  }, [limit]);
 
   useEffect(() => {
     fetchSummaryData();
-  }, [limit]);
+  }, [fetchSummaryData]);
 
   const refreshSummary = () => {
     fetchSummaryData();

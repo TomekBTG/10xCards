@@ -96,7 +96,7 @@ export function AuthStateProvider({ initialServerState }: AuthStateProviderProps
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, [authState.isLoggedIn]);
 
   // Nie renderuj nic - to jest tylko dostawca stanu
   return null;

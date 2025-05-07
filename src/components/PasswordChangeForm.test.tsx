@@ -1,15 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import PasswordChangeForm from "./PasswordChangeForm";
-import { useProfileActions } from "../lib/hooks/useProfileActions";
-import { useToast } from "../lib/hooks/useToast";
 
 // Definiujemy typ odpowiedzi dla changePassword, aby uwzględnić właściwość error
-type ChangePasswordResponse = {
+interface ChangePasswordResponse {
   success: boolean;
   error?: string;
-};
+}
 
 // Mockujemy hooki używane w komponencie
 const successToastMock = vi.fn();
@@ -199,7 +197,7 @@ describe("PasswordChangeForm", () => {
     await userEvent.type(screen.getByLabelText(/^potwierdź nowe hasło/i), "noweHaslo123");
 
     // Mockujemy console.error
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
 
     // Symulujemy kliknięcie przycisku submit
     const submitButton = screen.getByRole("button", { name: /zmień hasło/i });

@@ -14,8 +14,11 @@ const DashboardStatsCard: React.FC<DashboardStatsCardProps> = ({ title, value, t
 
   return (
     <div
-      className={`p-5 rounded-lg cursor-pointer hover:bg-zinc-800/50 transition-all duration-300 border border-zinc-800/50 ${onClick ? "cursor-pointer" : ""}`}
+      className={`p-5 rounded-lg hover:bg-zinc-800/50 transition-all duration-300 border border-zinc-800/50 ${onClick ? "cursor-pointer" : ""}`}
       onClick={onClick}
+      onKeyDown={onClick ? (e) => e.key === "Enter" && onClick() : undefined}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
     >
       <div className="flex justify-between items-start">
         <div>

@@ -344,7 +344,7 @@ const LibraryViewPage = () => {
   } = useFlashcards();
 
   const { pagination, setPagination, handlePageChange, handleLimitChange } = usePagination();
-  const { filters, setFilters, handleFilterChange } = useFilters();
+  const { filters, handleFilterChange } = useFilters();
 
   // Rejestracja efektu resetującego paginację przy zmianie filtrów
   useEffect(() => {

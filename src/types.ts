@@ -151,7 +151,7 @@ export interface QuizState {
 }
 
 // Rozszerzenie typu Locals dla Astro
-declare namespace App {
+declare module "astro" {
   interface Locals {
     isAuthenticated: boolean;
     supabase: SupabaseClient;

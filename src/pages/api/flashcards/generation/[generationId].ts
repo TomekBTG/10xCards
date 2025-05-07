@@ -2,24 +2,6 @@ import { z } from "zod";
 import type { APIRoute } from "astro";
 import type { FlashcardDTO, FlashcardGenerationLogDTO } from "../../../../types";
 
-// Definicja interfejsu dla locals jeśli App.Locals nie jest rozpoznawany
-interface LocalsWithSupabase {
-  supabase: {
-    auth: {
-      getUser: () => Promise<{
-        data: {
-          user: { id: string } | null;
-        };
-      }>;
-      getSession: () => Promise<{
-        data: {
-          session: unknown;
-        };
-      }>;
-    };
-  };
-}
-
 export const GET: APIRoute = async ({ params, locals }) => {
   // Sprawdź uwierzytelnienie z middleware
   const isLoggedIn = "isAuthenticated" in locals ? (locals.isAuthenticated as boolean) : false;

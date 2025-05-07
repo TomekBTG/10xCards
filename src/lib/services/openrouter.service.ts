@@ -5,14 +5,7 @@
  * with Large Language Model (LLM) capabilities.
  */
 
-import type {
-  ModelParameters,
-  RequestPayload,
-  ResponseFormat,
-  ParsedResponse,
-  JsonSchemaProperty,
-  JsonSchema,
-} from "./openrouter.types";
+import type { ModelParameters, RequestPayload, ResponseFormat, ParsedResponse } from "./openrouter.types";
 import { OpenRouterError } from "./openrouter.types";
 
 /**
@@ -317,7 +310,7 @@ export class OpenRouterService {
         if (content.trim().startsWith("{") || content.trim().startsWith("[")) {
           parsedContent = JSON.parse(content);
         }
-      } catch (e) {
+      } catch {
         // If parsing fails, keep the original string
         parsedContent = content;
       }
