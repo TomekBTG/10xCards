@@ -32,12 +32,12 @@ jobs:
       - name: Lint
         run: npm run lint
 
-  test:
-    name: Test
+  unit-test:
+    name: Unit Tests
     runs-on: ubuntu-latest
+    needs: lint
     permissions:
       contents: read
-    needs: lint
     env:
       PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
       PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
@@ -71,29 +71,59 @@ jobs:
       - name: Build for E2E tests
         run: npm run build
         
-      - name: Cache build output for E2E
+      - name: Cache build output
         uses: actions/cache@v4
         with:
           path: dist
           key: ${{ runner.os }}-build-${{ github.sha }}
+
+  e2e-test:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    permissions:
+      contents: read
+    env:
+      PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+      PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
+      PUBLIC_OPENROUTER_API_KEY: ${{ secrets.PUBLIC_OPENROUTER_API_KEY }}
+      E2E_USERNAME: ${{ secrets.E2E_USERNAME }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+      E2E_WAIT_TIMEOUT: "10000"
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps chromium
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
       
-      - name: Run E2E tests
-        env:
-          E2E_USERNAME: ${{ secrets.E2E_USERNAME }}
-          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
-          E2E_WAIT_TIMEOUT: "10000"
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      
+      - name: Install TypeScript
+        run: npm install typescript@latest --no-save --legacy-peer-deps
+      
+      - name: Create .env.test file
         run: |
-          # Tworzenie pliku .env.test z wszystkimi potrzebnymi zmiennymi
           echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" > .env.test
           echo "PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env.test
           echo "PUBLIC_OPENROUTER_API_KEY=${{ secrets.PUBLIC_OPENROUTER_API_KEY }}" >> .env.test
           echo "E2E_USERNAME=${{ secrets.E2E_USERNAME }}" >> .env.test
           echo "E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.test
           echo "E2E_WAIT_TIMEOUT=10000" >> .env.test
-          
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+      
+      - name: Run E2E tests
+        run: |
           # Uruchom serwer i testy
           npm run dev:e2e &
           sleep 10
@@ -106,7 +136,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    needs: test
+    needs: [unit-test, e2e-test]
     env:
       PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
       PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
