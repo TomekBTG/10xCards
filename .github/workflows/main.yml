@@ -103,7 +103,7 @@ jobs:
           npm run dev:e2e &
           npx wait-on --timeout 60000 http://localhost:3000
           # Uruchom testy E2E
-          PLAYWRIGHT_REUSE_SERVER=1 npm run test:e2e -- --workers=2
+          PLAYWRIGHT_REUSE_SERVER=1 npm run test:e2e -- --workers=1
         timeout-minutes: 5
   
   build:
