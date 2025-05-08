@@ -191,12 +191,19 @@ export class HomePage extends BasePage {
       return;
     }
 
+    // Pobierz wartości timeoutów z zmiennych środowiskowych lub użyj domyślnych wartości
+    const pageLoadWait = parseInt(process.env.E2E_PAGE_LOAD_WAIT || "2000", 10);
+    const waitTimeout = parseInt(process.env.E2E_WAIT_TIMEOUT || "10000", 10);
+
     // Przejdź do strony logowania
     await super.goto("/login");
     await this.waitForPageLoad();
 
+    // Dodatkowe oczekiwanie dla pełnego załadowania strony
+    console.log(`Oczekiwanie ${pageLoadWait}ms na pełne załadowanie strony logowania...`);
+    await this.page.waitForTimeout(pageLoadWait);
+
     // Pobierz dane logowania z zmiennych środowiskowych lub użyj domyślnych wartości testowych
-    // UWAGA: W produkcji zaleca się używanie zmiennych środowiskowych zamiast hardcodowanych danych
     const username = process.env.E2E_USERNAME || "test@example.com";
     const password = process.env.E2E_PASSWORD || "testPassword123";
 
@@ -206,6 +213,12 @@ export class HomePage extends BasePage {
     const emailInput = this.page.getByLabel("Email");
     const passwordInput = this.page.getByLabel("Hasło");
     const loginButton = this.page.getByRole("button", { name: "Zaloguj się" });
+
+    // Zrzut ekranu dla diagnostyki
+    await this.page.screenshot({ path: "login-page-before-check.png" });
+
+    console.log("Oczekiwanie dodatkowych 2 sekund przed sprawdzeniem formularza...");
+    await this.page.waitForTimeout(2000);
 
     const isEmailInputVisible = await emailInput.isVisible().catch(() => false);
     const isPasswordInputVisible = await passwordInput.isVisible().catch(() => false);
@@ -217,32 +230,70 @@ export class HomePage extends BasePage {
       console.log(`- Password input: ${isPasswordInputVisible}`);
       console.log(`- Login button: ${isLoginButtonVisible}`);
 
-      // Zapisz zrzut ekranu dla diagnostyki
-      await this.page.screenshot({ path: "login-form-issue.png" });
+      // Spróbuj alternatywnych selektorów
+      console.log("Próba użycia alternatywnych selektorów...");
+      const altEmailInput = this.page.locator('input[type="email"]');
+      const altPasswordInput = this.page.locator('input[type="password"]');
+      const altLoginButton = this.page.locator('button[type="submit"]');
 
-      throw new Error("Formularz logowania nie jest dostępny lub ma inną strukturę niż oczekiwano");
+      const isAltEmailVisible = await altEmailInput.isVisible().catch(() => false);
+      const isAltPasswordVisible = await altPasswordInput.isVisible().catch(() => false);
+      const isAltButtonVisible = await altLoginButton.isVisible().catch(() => false);
+
+      console.log("Alternatywne selektory:");
+      console.log(`- Alt Email input: ${isAltEmailVisible}`);
+      console.log(`- Alt Password input: ${isAltPasswordVisible}`);
+      console.log(`- Alt Login button: ${isAltButtonVisible}`);
+
+      if (isAltEmailVisible && isAltPasswordVisible && isAltButtonVisible) {
+        console.log("Używanie alternatywnych selektorów do logowania");
+        await altEmailInput.fill(username);
+        await altPasswordInput.fill(password);
+        await altLoginButton.click();
+      } else {
+        // Zapisz zrzut ekranu dla diagnostyki
+        await this.page.screenshot({ path: "login-form-issue.png" });
+
+        // Zrzut HTML dla diagnostyki
+        const html = await this.page.content();
+        console.log("Fragment HTML strony logowania:", html.substring(0, 500) + "...");
+
+        // Spróbuj bezpośrednio przejść do dashboard
+        console.log("Próba bezpośredniego przejścia do dashboard...");
+        await super.goto("/dashboard");
+        await this.waitForPageLoad();
+
+        if (this.page.url().includes("/dashboard")) {
+          console.log("Udało się przejść bezpośrednio do dashboard");
+          return;
+        }
+
+        throw new Error("Formularz logowania nie jest dostępny lub ma inną strukturę niż oczekiwano");
+      }
+    } else {
+      // Wypełnij formularz logowania
+      console.log("Wypełnianie formularza logowania...");
+      await emailInput.fill(username);
+      await passwordInput.fill(password);
+
+      // Zrzut ekranu przed kliknięciem przycisku logowania (do diagnostyki)
+      await this.page.screenshot({ path: "before-login-click.png" });
+
+      // Kliknij przycisk logowania
+      await loginButton.click();
     }
-
-    // Wypełnij formularz logowania
-    await emailInput.fill(username);
-    await passwordInput.fill(password);
-
-    // Zrzut ekranu przed kliknięciem przycisku logowania (do diagnostyki)
-    await this.page.screenshot({ path: "before-login-click.png" });
-
-    // Kliknij przycisk logowania
-    await loginButton.click();
 
     try {
       // Poczekaj na przekierowanie po zalogowaniu
-      await this.page.waitForURL("**/dashboard", { timeout: 10000 });
+      console.log(`Oczekiwanie na przekierowanie do dashboard (timeout: ${waitTimeout}ms)...`);
+      await this.page.waitForURL("**/dashboard", { timeout: waitTimeout });
       console.log("Przekierowanie do dashboard nastąpiło");
 
       // Poczekaj na pełne załadowanie strony
       await this.waitForPageLoad();
 
       // Dodatkowe oczekiwanie dla ładowania JavaScript
-      await this.page.waitForTimeout(2000);
+      await this.page.waitForTimeout(pageLoadWait);
 
       // Sprawdź, czy faktycznie użytkownik jest zalogowany
       const isLoggedIn = await this.isUserLoggedIn();

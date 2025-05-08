@@ -90,6 +90,8 @@ jobs:
           PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
           PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
           PUBLIC_OPENROUTER_API_KEY: ${{ secrets.PUBLIC_OPENROUTER_API_KEY }}
+          E2E_WAIT_TIMEOUT: "10000"
+          E2E_PAGE_LOAD_WAIT: "5000"
         run: |
           # Upewnij się, że plik .env.test istnieje
           if [ ! -f .env.test ]; then
@@ -98,9 +100,13 @@ jobs:
             echo "PUBLIC_OPENROUTER_API_KEY=${{ secrets.PUBLIC_OPENROUTER_API_KEY }}" >> .env.test
             echo "E2E_USERNAME=${{ secrets.E2E_USERNAME }}" >> .env.test
             echo "E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.test
+            echo "E2E_WAIT_TIMEOUT=10000" >> .env.test
+            echo "E2E_PAGE_LOAD_WAIT=5000" >> .env.test
           fi
           # Uruchom serwer Astro w trybie testowym
           npm run dev:e2e &
+          # Daj więcej czasu na pełne uruchomienie serwera
+          sleep 10
           npx wait-on --timeout 60000 http://localhost:3000
           # Uruchom testy E2E
           PLAYWRIGHT_REUSE_SERVER=1 npm run test:e2e -- --workers=1
