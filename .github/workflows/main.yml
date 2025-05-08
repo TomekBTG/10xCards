@@ -62,6 +62,15 @@ jobs:
       - name: Install TypeScript
         run: npm install typescript@latest --no-save --legacy-peer-deps
       
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+      
+      - name: Create .env.test file
+        run: |
+          echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" > .env.test
+          echo "PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env.test
+          echo "PUBLIC_OPENROUTER_API_KEY=${{ secrets.PUBLIC_OPENROUTER_API_KEY }}" >> .env.test
+      
       - name: Run unit tests
         run: npm run test
       
@@ -76,8 +85,16 @@ jobs:
       
       - name: Run E2E tests
         run: |
+          # Upewnij się, że plik .env.test istnieje
+          if [ ! -f .env.test ]; then
+            echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" > .env.test
+            echo "PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env.test
+            echo "PUBLIC_OPENROUTER_API_KEY=${{ secrets.PUBLIC_OPENROUTER_API_KEY }}" >> .env.test
+          fi
+          # Uruchom serwer Astro w trybie testowym
           npm run dev:e2e &
           npx wait-on --timeout 60000 http://localhost:3000
+          # Uruchom testy E2E
           PLAYWRIGHT_REUSE_SERVER=1 npm run test:e2e -- --workers=2
         timeout-minutes: 5
   
@@ -117,6 +134,13 @@ jobs:
       - name: Install TypeScript
         if: steps.restore-build.outputs.cache-hit != 'true'
         run: npm install typescript@latest --no-save --legacy-peer-deps
+      
+      - name: Create .env.test file
+        if: steps.restore-build.outputs.cache-hit != 'true'
+        run: |
+          echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" > .env.test
+          echo "PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env.test
+          echo "PUBLIC_OPENROUTER_API_KEY=${{ secrets.PUBLIC_OPENROUTER_API_KEY }}" >> .env.test
       
       - name: Build
         if: steps.restore-build.outputs.cache-hit != 'true'
