@@ -26,3 +26,7 @@ pnpm-debug.log*
 
 test-results/
 playwright-report/
+
+# root-level PNG files
+/*.png
+

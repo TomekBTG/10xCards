@@ -40,7 +40,7 @@ export default defineConfig({
   webServer: {
     command: "npm run build -- --mode test && npm run preview -- --mode test",
     url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: process.env.PLAYWRIGHT_REUSE_SERVER === "1" || !process.env.CI,
     stdout: "pipe",
     stderr: "pipe",
   },
