@@ -84,12 +84,20 @@ jobs:
           key: ${{ runner.os }}-build-${{ github.sha }}
       
       - name: Run E2E tests
+        env:
+          E2E_USERNAME: ${{ secrets.E2E_USERNAME }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+          PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+          PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
+          PUBLIC_OPENROUTER_API_KEY: ${{ secrets.PUBLIC_OPENROUTER_API_KEY }}
         run: |
           # Upewnij się, że plik .env.test istnieje
           if [ ! -f .env.test ]; then
             echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" > .env.test
             echo "PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env.test
             echo "PUBLIC_OPENROUTER_API_KEY=${{ secrets.PUBLIC_OPENROUTER_API_KEY }}" >> .env.test
+            echo "E2E_USERNAME=${{ secrets.E2E_USERNAME }}" >> .env.test
+            echo "E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.test
           fi
           # Uruchom serwer Astro w trybie testowym
           npm run dev:e2e &
