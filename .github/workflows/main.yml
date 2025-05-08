@@ -85,7 +85,6 @@ jobs:
           E2E_USERNAME: ${{ secrets.E2E_USERNAME }}
           E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
           E2E_WAIT_TIMEOUT: "10000"
-          E2E_PAGE_LOAD_WAIT: "5000"
         run: |
           # Tworzenie pliku .env.test z wszystkimi potrzebnymi zmiennymi
           echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" > .env.test
@@ -94,7 +93,6 @@ jobs:
           echo "E2E_USERNAME=${{ secrets.E2E_USERNAME }}" >> .env.test
           echo "E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.test
           echo "E2E_WAIT_TIMEOUT=10000" >> .env.test
-          echo "E2E_PAGE_LOAD_WAIT=5000" >> .env.test
           
           # Uruchom serwer i testy
           npm run dev:e2e &

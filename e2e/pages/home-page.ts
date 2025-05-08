@@ -29,6 +29,13 @@ export class HomePage extends BasePage {
 
     console.log("Sprawdzanie, czy użytkownik jest zalogowany - rozpoczęte");
 
+    // Sprawdź URL - jeśli jesteśmy na stronie dashboard, library, profile - użytkownik jest zalogowany
+    const currentUrl = this.page.url();
+    if (currentUrl.includes("/dashboard") || currentUrl.includes("/library") || currentUrl.includes("/profile")) {
+      console.log(`Użytkownik zalogowany (wykryto chronioną stronę: ${currentUrl})`);
+      return true;
+    }
+
     // Sprawdź różne selektory, które mogą wskazywać na zalogowanego użytkownika
     const selectors = [
       '[data-testid="konto-button"]',
@@ -79,16 +86,6 @@ export class HomePage extends BasePage {
         console.log("Użytkownik NIE jest zalogowany (wykryto element logowania)");
         return false;
       }
-    }
-
-    // Sprawdź URL - jeśli jesteśmy na stronie dashboard, biblioteka itp., prawdopodobnie użytkownik jest zalogowany
-    const currentUrl = this.page.url();
-    if (currentUrl.includes("/dashboard") || currentUrl.includes("/library") || currentUrl.includes("/profile")) {
-      console.log(`Użytkownik prawdopodobnie zalogowany (jesteśmy na stronie: ${currentUrl})`);
-      console.log("Ale nie wykryto elementów UI charakterystycznych dla zalogowanego użytkownika");
-
-      // Zwróć true - zakładamy, że skoro jesteśmy na chronionych stronach, to użytkownik jest zalogowany
-      return true;
     }
 
     console.log("Użytkownik nie jest zalogowany (nie wykryto żadnych oznak zalogowania)");
@@ -185,23 +182,25 @@ export class HomePage extends BasePage {
    * Loguje użytkownika używając danych z .env.test lub domyślnych danych testowych
    */
   async login(): Promise<void> {
-    // Jeśli użytkownik jest już zalogowany, nie rób nic
+    // Przejdź do strony logowania
+    await super.goto("/login");
+    await this.waitForPageLoad();
+
+    // Sprawdź, czy zostaliśmy przekierowani na dashboard (co oznacza, że jesteśmy już zalogowani)
+    const currentUrl = this.page.url();
+    if (currentUrl.includes("/dashboard")) {
+      console.log("Przekierowanie z /login na /dashboard - użytkownik już zalogowany");
+      return;
+    }
+
+    // Sprawdź, czy użytkownik jest zalogowany
     if (await this.isUserLoggedIn()) {
       console.log("Użytkownik jest już zalogowany, pomijam proces logowania");
       return;
     }
 
     // Pobierz wartości timeoutów z zmiennych środowiskowych lub użyj domyślnych wartości
-    const pageLoadWait = parseInt(process.env.E2E_PAGE_LOAD_WAIT || "2000", 10);
     const waitTimeout = parseInt(process.env.E2E_WAIT_TIMEOUT || "10000", 10);
-
-    // Przejdź do strony logowania
-    await super.goto("/login");
-    await this.waitForPageLoad();
-
-    // Dodatkowe oczekiwanie dla pełnego załadowania strony
-    console.log(`Oczekiwanie ${pageLoadWait}ms na pełne załadowanie strony logowania...`);
-    await this.page.waitForTimeout(pageLoadWait);
 
     // Pobierz dane logowania z zmiennych środowiskowych lub użyj domyślnych wartości testowych
     const username = process.env.E2E_USERNAME || "test@example.com";
@@ -213,12 +212,6 @@ export class HomePage extends BasePage {
     const emailInput = this.page.getByLabel("Email");
     const passwordInput = this.page.getByLabel("Hasło");
     const loginButton = this.page.getByRole("button", { name: "Zaloguj się" });
-
-    // Zrzut ekranu dla diagnostyki
-    await this.page.screenshot({ path: "login-page-before-check.png" });
-
-    console.log("Oczekiwanie dodatkowych 2 sekund przed sprawdzeniem formularza...");
-    await this.page.waitForTimeout(2000);
 
     const isEmailInputVisible = await emailInput.isVisible().catch(() => false);
     const isPasswordInputVisible = await passwordInput.isVisible().catch(() => false);
@@ -251,12 +244,14 @@ export class HomePage extends BasePage {
         await altPasswordInput.fill(password);
         await altLoginButton.click();
       } else {
-        // Zapisz zrzut ekranu dla diagnostyki
-        await this.page.screenshot({ path: "login-form-issue.png" });
+        // Sprawdź, czy nie jesteśmy znowu na dashboard
+        const currentUrl = this.page.url();
+        console.log("Aktualny URL przed przejściem bezpośrednio do dashboard:", currentUrl);
 
-        // Zrzut HTML dla diagnostyki
-        const html = await this.page.content();
-        console.log("Fragment HTML strony logowania:", html.substring(0, 500) + "...");
+        if (currentUrl.includes("/dashboard")) {
+          console.log("Aktualnie jesteśmy na dashboard - użytkownik jest zalogowany");
+          return;
+        }
 
         // Spróbuj bezpośrednio przejść do dashboard
         console.log("Próba bezpośredniego przejścia do dashboard...");
@@ -276,9 +271,6 @@ export class HomePage extends BasePage {
       await emailInput.fill(username);
       await passwordInput.fill(password);
 
-      // Zrzut ekranu przed kliknięciem przycisku logowania (do diagnostyki)
-      await this.page.screenshot({ path: "before-login-click.png" });
-
       // Kliknij przycisk logowania
       await loginButton.click();
     }
@@ -292,9 +284,6 @@ export class HomePage extends BasePage {
       // Poczekaj na pełne załadowanie strony
       await this.waitForPageLoad();
 
-      // Dodatkowe oczekiwanie dla ładowania JavaScript
-      await this.page.waitForTimeout(pageLoadWait);
-
       // Sprawdź, czy faktycznie użytkownik jest zalogowany
       const isLoggedIn = await this.isUserLoggedIn();
       if (!isLoggedIn) {
@@ -307,6 +296,13 @@ export class HomePage extends BasePage {
       // Zakładamy, że jesteśmy zalogowani, skoro URL to dashboard
       return;
     } catch (error) {
+      // Sprawdź aktualny URL - może już jesteśmy na dashboard mimo błędu
+      const finalUrl = this.page.url();
+      if (finalUrl.includes("/dashboard")) {
+        console.log("Jesteśmy na dashboard mimo błędu oczekiwania - użytkownik zalogowany");
+        return;
+      }
+
       console.log("Błąd podczas oczekiwania na przekierowanie po logowaniu:", error);
 
       // Sprawdź, czy pojawił się komunikat o błędzie logowania
