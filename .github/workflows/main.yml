@@ -12,8 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      NODE_VERSION: 22.14.0
     
     steps:
       - name: Checkout repository
@@ -41,7 +39,6 @@ jobs:
       contents: read
     needs: lint
     env:
-      NODE_VERSION: 22.14.0
       PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
       PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
       PUBLIC_OPENROUTER_API_KEY: ${{ secrets.PUBLIC_OPENROUTER_API_KEY }}
@@ -62,9 +59,6 @@ jobs:
       - name: Install TypeScript
         run: npm install typescript@latest --no-save --legacy-peer-deps
       
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps chromium
-      
       - name: Create .env.test file
         run: |
           echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" > .env.test
@@ -83,32 +77,29 @@ jobs:
           path: dist
           key: ${{ runner.os }}-build-${{ github.sha }}
       
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+      
       - name: Run E2E tests
         env:
           E2E_USERNAME: ${{ secrets.E2E_USERNAME }}
           E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
-          PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
-          PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
-          PUBLIC_OPENROUTER_API_KEY: ${{ secrets.PUBLIC_OPENROUTER_API_KEY }}
           E2E_WAIT_TIMEOUT: "10000"
           E2E_PAGE_LOAD_WAIT: "5000"
         run: |
-          # Upewnij się, że plik .env.test istnieje
-          if [ ! -f .env.test ]; then
-            echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" > .env.test
-            echo "PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env.test
-            echo "PUBLIC_OPENROUTER_API_KEY=${{ secrets.PUBLIC_OPENROUTER_API_KEY }}" >> .env.test
-            echo "E2E_USERNAME=${{ secrets.E2E_USERNAME }}" >> .env.test
-            echo "E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.test
-            echo "E2E_WAIT_TIMEOUT=10000" >> .env.test
-            echo "E2E_PAGE_LOAD_WAIT=5000" >> .env.test
-          fi
-          # Uruchom serwer Astro w trybie testowym
+          # Tworzenie pliku .env.test z wszystkimi potrzebnymi zmiennymi
+          echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" > .env.test
+          echo "PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env.test
+          echo "PUBLIC_OPENROUTER_API_KEY=${{ secrets.PUBLIC_OPENROUTER_API_KEY }}" >> .env.test
+          echo "E2E_USERNAME=${{ secrets.E2E_USERNAME }}" >> .env.test
+          echo "E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.test
+          echo "E2E_WAIT_TIMEOUT=10000" >> .env.test
+          echo "E2E_PAGE_LOAD_WAIT=5000" >> .env.test
+          
+          # Uruchom serwer i testy
           npm run dev:e2e &
-          # Daj więcej czasu na pełne uruchomienie serwera
           sleep 10
           npx wait-on --timeout 60000 http://localhost:3000
-          # Uruchom testy E2E
           PLAYWRIGHT_REUSE_SERVER=1 npm run test:e2e -- --workers=1
         timeout-minutes: 5
   
@@ -119,7 +110,6 @@ jobs:
       contents: read
     needs: test
     env:
-      NODE_VERSION: 22.14.0
       PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
       PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
       PUBLIC_OPENROUTER_API_KEY: ${{ secrets.PUBLIC_OPENROUTER_API_KEY }}
@@ -148,13 +138,6 @@ jobs:
       - name: Install TypeScript
         if: steps.restore-build.outputs.cache-hit != 'true'
         run: npm install typescript@latest --no-save --legacy-peer-deps
-      
-      - name: Create .env.test file
-        if: steps.restore-build.outputs.cache-hit != 'true'
-        run: |
-          echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" > .env.test
-          echo "PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env.test
-          echo "PUBLIC_OPENROUTER_API_KEY=${{ secrets.PUBLIC_OPENROUTER_API_KEY }}" >> .env.test
       
       - name: Build
         if: steps.restore-build.outputs.cache-hit != 'true'
