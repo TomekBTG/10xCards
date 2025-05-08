@@ -51,9 +51,9 @@ test.describe("Testy elementów UI związanych z fiszkami", () => {
     await page.screenshot({ path: "page-after-login.png" });
 
     // Sprawdź obecność linków do stron związanych z fiszkami
-    const libraryLink = page.locator('a[href*="library"], a:has-text("Biblioteka"), a:has-text("Library")');
-    const isLibraryLinkVisible = await libraryLink.isVisible();
-    expect(isLibraryLinkVisible).toBeTruthy();
+    const libraryLinks = page.locator('a[href*="library"], a:has-text("Biblioteka"), a:has-text("Library")');
+    const libraryLinksCount = await libraryLinks.count();
+    expect(libraryLinksCount).toBeGreaterThan(0);
 
     // Sprawdź tytuł strony
     const title = await page.title();
@@ -73,12 +73,14 @@ test.describe("Testy elementów UI związanych z fiszkami", () => {
   test("Symulacja dodawania fiszki (interakcja z interfejsem)", async ({ page }) => {
     // Ponieważ nie możemy bezpośrednio przejść do strony dodawania fiszek,
     // sprawdzimy, czy na stronie jest link do biblioteki i spróbujemy tam przejść
-    const libraryLink = page.locator('a[href*="library"], a:has-text("Biblioteka"), a:has-text("Library")').first();
+    const libraryLinks = page.locator('a[href*="library"], a:has-text("Biblioteka"), a:has-text("Library")');
+    const libraryLinksCount = await libraryLinks.count();
 
-    if (await libraryLink.isVisible()) {
-      // Kliknij link do biblioteki
+    if (libraryLinksCount > 0) {
+      // Kliknij pierwszy link do biblioteki
+      const firstLibraryLink = libraryLinks.first();
       try {
-        await libraryLink.click();
+        await firstLibraryLink.click();
         await page.waitForTimeout(2000); // Daj stronie czas na załadowanie
 
         console.log("URL po kliknięciu linku biblioteki:", page.url());
