@@ -1,9 +1,9 @@
-name: Pull Request Workflow
+name: CI/CD Pipeline
 
 on:
-  pull_request:
-    branches: [ main ]
-    types: [opened, synchronize, reopened]
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   lint:
@@ -11,8 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      NODE_VERSION: 22.14.0
     
     steps:
       - name: Checkout repository
@@ -37,93 +35,145 @@ jobs:
     name: Unit Tests
     needs: lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+      PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
+      PUBLIC_OPENROUTER_API_KEY: ${{ secrets.PUBLIC_OPENROUTER_API_KEY }}
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
-          
+      
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
+      
+      - name: Install TypeScript
+        run: npm install typescript@latest --no-save --legacy-peer-deps
+      
+      - name: Create .env.test file
+        run: |
+          echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" > .env.test
+          echo "PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env.test
+          echo "PUBLIC_OPENROUTER_API_KEY=${{ secrets.PUBLIC_OPENROUTER_API_KEY }}" >> .env.test
+      
+      - name: Run unit tests
+        run: npm run test
+      
+      - name: Build for cache
+        run: npm run build
         
-      - name: Run unit tests with coverage
-        run: npm run test:coverage
-        
-      - name: Upload test coverage
-        uses: actions/upload-artifact@v4
+      - name: Cache build output
+        uses: actions/cache@v4
         with:
-          name: unit-test-coverage
-          path: coverage/
-          retention-days: 5
+          path: dist
+          key: ${{ runner.os }}-build-${{ github.sha }}
 
   e2e-test:
     name: E2E Tests
     needs: lint
     runs-on: ubuntu-latest
-    environment: integration
+    permissions:
+      contents: read
     env:
       PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
       PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
       PUBLIC_OPENROUTER_API_KEY: ${{ secrets.PUBLIC_OPENROUTER_API_KEY }}
+      E2E_USERNAME: ${{ secrets.E2E_USERNAME }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+      E2E_WAIT_TIMEOUT: "10000"
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
-          
-      - name: Install dependencies
-        run: npm ci
       
-      - name: Install Playwright browsers
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      
+      - name: Install TypeScript
+        run: npm install typescript@latest --no-save --legacy-peer-deps
+      
+      - name: Create .env.test file
+        run: |
+          echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" > .env.test
+          echo "PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env.test
+          echo "PUBLIC_OPENROUTER_API_KEY=${{ secrets.PUBLIC_OPENROUTER_API_KEY }}" >> .env.test
+          echo "E2E_USERNAME=${{ secrets.E2E_USERNAME }}" >> .env.test
+          echo "E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.test
+          echo "E2E_WAIT_TIMEOUT=10000" >> .env.test
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
-        
+      
       - name: Run E2E tests
-        run: npm run test:e2e
-        
-      - name: Upload test results
-        if: always()
+        run: |
+          # Uruchom serwer i testy
+          npm run dev:e2e &
+          sleep 10
+          npx wait-on --timeout 60000 http://localhost:3000
+          PLAYWRIGHT_REUSE_SERVER=1 npm run test:e2e -- --workers=1
+        timeout-minutes: 5
+  
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    needs: [unit-test, e2e-test]
+    env:
+      PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+      PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
+      PUBLIC_OPENROUTER_API_KEY: ${{ secrets.PUBLIC_OPENROUTER_API_KEY }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      
+      - name: Restore cached build
+        uses: actions/cache@v4
+        id: restore-build
+        with:
+          path: dist
+          key: ${{ runner.os }}-build-${{ github.sha }}
+      
+      - name: Install dependencies
+        if: steps.restore-build.outputs.cache-hit != 'true'
+        run: npm ci --legacy-peer-deps
+      
+      - name: Install TypeScript
+        if: steps.restore-build.outputs.cache-hit != 'true'
+        run: npm install typescript@latest --no-save --legacy-peer-deps
+      
+      - name: Build
+        if: steps.restore-build.outputs.cache-hit != 'true'
+        run: npm run build
+      
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 5
-
-  status-comment:
-    name: PR Status Comment
-    needs: [unit-test, e2e-test]
-    runs-on: ubuntu-latest
-    if: ${{ success() }}
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Download unit test coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: unit-test-coverage
-          path: coverage
-          
-      - name: Download E2E test results
-        uses: actions/download-artifact@v4
-        with:
-          name: playwright-report
-          path: playwright-report
-          
-      - name: Create PR comment
-        uses: peter-evans/create-or-update-comment@v3
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ## ✅ Wszystkie testy przeszły pomyślnie
-            
-            ### Podsumowanie
-            - **Linting:** ✓ Zakończone powodzeniem
-            - **Testy jednostkowe:** ✓ Zakończone powodzeniem
-            - **Testy E2E:** ✓ Zakończone powodzeniem
-            
-            Szczegółowe raporty są dostępne w artefaktach build-u. 
+          name: build-output
+          path: dist/
+          retention-days: 7
+          compression-level: 9 
