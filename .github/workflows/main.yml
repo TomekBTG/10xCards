@@ -78,7 +78,7 @@ jobs:
         run: |
           npm run dev:e2e &
           npx wait-on --timeout 60000 http://localhost:3000
-          npm run test:e2e -- --workers=2
+          npm run test:e2e -- --workers=2 --config="{webServer:{reuseExistingServer:true}}"
         timeout-minutes: 5
   
   build:
