@@ -21,6 +21,7 @@
     "dev:e2e": "astro dev --mode test"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^9.0.1",
     "@astrojs/node": "^9.2.0",
     "@astrojs/react": "^4.2.4",
     "@astrojs/sitemap": "3.3.0",
