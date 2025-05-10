@@ -9,7 +9,7 @@
 - **Frontend**: Astro 5, React 19, TypeScript 5, Tailwind CSS 4, Shadcn/ui
 - **Backend**: Supabase (PostgreSQL) for authentication and data management
 - **AI Integration**: Openrouter.ai for generating flashcards using various artificial intelligence models
-- **CI/CD & Hosting**: GitHub Actions for CI/CD pipelines and DigitalOcean for hosting
+- **CI/CD & Hosting**: GitHub Actions for CI/CD pipelines and Cloudflare Pages for hosting
 
 ## Testing Stack
 
@@ -62,6 +62,14 @@ The scope of 10xCards includes:
 ## Project Status
 
 The project is currently in its early development stage (version 0.0.1). Continuous improvements and new features are under active development.
+
+## Deployments & Releases
+
+The application is hosted on **Cloudflare Pages**. This decision was based on the following key factors:
+- **Cost-Effectiveness**: Cloudflare Pages offers a generous free tier and competitive pricing for scaling, which is ideal for a project starting as a side-project with commercial potential.
+- **Performance**: Global CDN and optimizations for static sites (Astro SSG) ensure fast loading times.
+- **Astro Support**: Good support for Astro, including server-side rendering (SSR) capabilities via Cloudflare Workers, which aligns with the project's tech stack.
+- **Ease of Use**: Simplified deployment process integrated with GitHub.
 
 ## Project Structure
 
