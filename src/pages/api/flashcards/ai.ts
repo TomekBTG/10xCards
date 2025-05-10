@@ -11,9 +11,6 @@ import { supabaseClient } from "../../../db/supabase.client";
 
 export const prerender = false;
 
-// Stały identyfikator użytkownika do testów
-const DEFAULT_USER_ID = "e12c2a37-0b49-4258-bebb-6076ddeceeb4";
-
 // Schema for validating input
 const generateFlashcardsSchema = z.object({
   user_input: z
@@ -48,6 +45,15 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       );
     }
 
+    // Pobierz dane sesji użytkownika
+    const { data } = await supabaseClient.auth.getSession();
+
+    // Sprawdź czy użytkownik ma ważną sesję i ID
+    if (!data.session || !data.session.user.id) {
+      return new Response(JSON.stringify({ error: "Unauthorized - brak ID użytkownika" }), { status: 401 });
+    }
+
+    const userId = data.session.user.id;
     const { user_input, category_id, category_name } = validationResult.data as GenerateFlashcardsCommand;
 
     // 2. Wygeneruj fiszki przy użyciu serwisu AI
@@ -55,7 +61,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
 
     // 3. Utwórz log generacji
     const generationLog = {
-      user_id: DEFAULT_USER_ID,
+      user_id: userId,
       user_input: user_input,
       number_generated: generatedFlashcards.length,
       generation_duration: 1, // Wartość przykładowa w sekundach
@@ -78,7 +84,7 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
 
     // 4. Przygotuj dane do zapisu w bazie danych
     const flashcardsToInsert = generatedFlashcards.map((flashcard) => ({
-      user_id: DEFAULT_USER_ID,
+      user_id: userId,
       front: flashcard.front || "",
       back: flashcard.back || "",
       status: flashcard.status || "pending",

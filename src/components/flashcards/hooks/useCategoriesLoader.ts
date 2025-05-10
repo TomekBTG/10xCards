@@ -17,6 +17,7 @@ export function useCategoriesLoader() {
       setError(null);
 
       try {
+        console.log("Pobieranie kategorii z API");
         const response = await fetch("/api/categories");
 
         if (!response.ok) {
@@ -24,6 +25,7 @@ export function useCategoriesLoader() {
         }
 
         const data = await response.json();
+        console.log("Pobrane kategorie:", data);
         setCategories(data);
       } catch (err) {
         console.error("Błąd podczas pobierania kategorii:", err);

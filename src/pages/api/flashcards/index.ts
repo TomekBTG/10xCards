@@ -162,6 +162,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response(JSON.stringify({ error: "Unauthorized - user not found" }), { status: 401 });
     }
 
+    // Logowanie danych wysłanych do API
+    console.log("Otrzymane dane fiszek:", JSON.stringify(flashcardsData));
+
     // Przygotuj fiszki do zapisania
     const preparedFlashcards = flashcardsData.map((flashcard) => ({
       ...flashcard,
@@ -169,8 +172,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
       status: "accepted", // domyślny status dla nowych fiszek
     }));
 
+    // Logowanie przygotowanych fiszek
+    console.log("Przygotowane fiszki do zapisu:", JSON.stringify(preparedFlashcards));
+
     // Zapisz fiszki używając serwisu
     const savedFlashcards = await flashcardService.saveFlashcards(preparedFlashcards);
+
+    // Logowanie zapisanych fiszek
+    console.log("Zapisane fiszki:", JSON.stringify(savedFlashcards));
 
     // Przygotuj odpowiedź
     const responsePayload = {

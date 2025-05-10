@@ -59,6 +59,7 @@ export function FlashcardEditor({
 
   const updateCategory = useCallback(
     (category_id: string | null, category_name?: string) => {
+      console.log("updateCategory:", { category_id, category_name });
       onChange({
         ...flashcard,
         category_id,

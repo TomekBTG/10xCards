@@ -30,6 +30,9 @@ export function FlashcardCategorySelector({
       // Jeśli przełączamy z dodawania na wybór, czyścimy nazwę nowej kategorii
       if (prev) {
         onChange(null);
+      } else {
+        // Jeśli przełączamy z wyboru na dodawanie, czyścimy wybraną kategorię i ustawiamy pustą nazwę nowej kategorii
+        onChange(null, "");
       }
       return !prev;
     });
@@ -41,16 +44,20 @@ export function FlashcardCategorySelector({
       if (value === "none") {
         onChange(null);
       } else {
-        onChange(value);
+        // Znajdź nazwę kategorii, żeby ją przechować
+        const selectedCategory = categories.find((category) => category.id === value);
+        onChange(value, selectedCategory?.name);
       }
     },
-    [onChange]
+    [onChange, categories]
   );
 
   // Obsługa wprowadzania nazwy nowej kategorii
   const handleNewCategoryChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      onChange(null, e.target.value);
+      const newName = e.target.value;
+      console.log("Nowa nazwa kategorii:", newName);
+      onChange(null, newName);
     },
     [onChange]
   );

@@ -7,6 +7,7 @@ import type {
   FlashcardsListResponseDTO,
 } from "../../types";
 import { supabaseClient } from "../../db/supabase.client";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Serwis do zarządzania fiszkami
@@ -48,6 +49,8 @@ export const flashcardService = {
    */
   async saveFlashcards(flashcards: CreateFlashcardCommand[]): Promise<FlashcardDTO[]> {
     try {
+      console.log("saveFlashcards - otrzymane dane:", JSON.stringify(flashcards));
+
       // Pobieramy aktualnego użytkownika
       const { data: userData } = await supabaseClient.auth.getUser();
       const userId = userData.user?.id;
@@ -56,24 +59,50 @@ export const flashcardService = {
         throw new Error("Nie znaleziono ID użytkownika. Proszę zalogować się ponownie.");
       }
 
+      // Przygotuj dane fiszek do zapisu
+      const flashcardsToInsert = flashcards.map((f) => {
+        const flashcardData = {
+          ...f,
+          user_id: userId,
+          status: "accepted", // Wszystkie zapisywane fiszki są akceptowane
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+
+        // Upewnij się, że category_name jest używane tylko dla nowych kategorii
+        if (flashcardData.category_id) {
+          // Jeśli istnieje category_id, to nie używamy category_name
+          delete flashcardData.category_name;
+          console.log("Używanie istniejącej kategorii:", flashcardData.category_id);
+        } else if (flashcardData.category_name) {
+          // Jeśli nie ma category_id, ale jest category_name, to tworzymy nową kategorię
+          // Generujemy nowe ID dla kategorii, ponieważ baza danych wymaga niepustej wartości
+          const newCategoryId = uuidv4();
+          console.log("Tworzenie nowej kategorii:", flashcardData.category_name, "z ID:", newCategoryId);
+          flashcardData.category_id = newCategoryId;
+        } else {
+          // Jeśli nie ma ani category_id, ani category_name, to fiszka jest bez kategorii
+          // Ale category_id nie może być null, więc ustawiamy specjalną wartość
+          console.log("Fiszka bez kategorii");
+          flashcardData.category_id = "uncategorized";
+          delete flashcardData.category_name;
+        }
+
+        // Logowanie każdej fiszki przed zapisem
+        console.log("Fiszka do zapisania:", JSON.stringify(flashcardData));
+
+        return flashcardData;
+      });
+
       // Zapisz fiszki w bazie danych przy użyciu Supabase
-      const { data, error } = await supabaseClient
-        .from("flashcards")
-        .insert(
-          flashcards.map((f) => ({
-            ...f,
-            user_id: userId,
-            status: "accepted", // Wszystkie zapisywane fiszki są akceptowane
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          }))
-        )
-        .select("*");
+      const { data, error } = await supabaseClient.from("flashcards").insert(flashcardsToInsert).select("*");
 
       if (error) {
+        console.error("Błąd Supabase podczas zapisywania fiszek:", error);
         throw new Error(`Błąd podczas zapisywania fiszek: ${error.message}`);
       }
 
+      console.log("Zapisane fiszki z Supabase:", JSON.stringify(data));
       return data || [];
     } catch (error) {
       console.error("Error saving flashcards:", error);

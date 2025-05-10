@@ -193,16 +193,37 @@ const useAddFlashcardsForm = () => {
     }));
 
     try {
+      // Logowanie kategorii w fiszkach
+      console.log(
+        "Fiszki przed przygotowaniem payloadu:",
+        formState.flashcards.map((f) => ({
+          id: f.id,
+          front: f.front.substring(0, 20) + "...",
+          category_id: f.category_id,
+          category_name: f.category_name,
+        }))
+      );
+
       // Przygotowanie danych zgodnie z API
       const payload: SaveFlashcardsPayload = {
-        flashcards: formState.flashcards.map((flashcard) => ({
-          front: flashcard.front,
-          back: flashcard.back,
-          is_ai_generated: false,
-          category_id: flashcard.category_id || undefined,
-          category_name: flashcard.category_name || undefined,
-          difficulty: flashcard.difficulty || undefined,
-        })),
+        flashcards: formState.flashcards.map((flashcard) => {
+          const preparedFlashcard = {
+            front: flashcard.front,
+            back: flashcard.back,
+            is_ai_generated: false,
+            category_id: flashcard.category_id || undefined,
+            category_name: !flashcard.category_id && flashcard.category_name ? flashcard.category_name : undefined,
+            difficulty: flashcard.difficulty || undefined,
+          };
+
+          console.log("Przygotowana fiszka dla API:", {
+            front: preparedFlashcard.front.substring(0, 20) + "...",
+            category_id: preparedFlashcard.category_id,
+            category_name: preparedFlashcard.category_name,
+          });
+
+          return preparedFlashcard;
+        }),
       };
 
       // Wywołanie API
