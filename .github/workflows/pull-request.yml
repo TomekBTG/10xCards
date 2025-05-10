@@ -6,8 +6,43 @@ on:
   workflow_dispatch:
 
 jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      node-version: ${{ steps.node-version.outputs.node-version }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Get Node.js version
+        id: node-version
+        run: echo "node-version=$(cat .nvmrc)" >> $GITHUB_OUTPUT
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      
+      - name: Install TypeScript
+        run: npm install typescript@latest --no-save --legacy-peer-deps
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ steps.node-version.outputs.node-version }}-${{ hashFiles('**/package-lock.json') }}
+
   lint:
     name: Lint
+    needs: setup
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -22,25 +57,21 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'npm'
       
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
-      
-      - name: Install TypeScript
-        run: npm install typescript@latest --no-save --legacy-peer-deps
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ needs.setup.outputs.node-version }}-${{ hashFiles('**/package-lock.json') }}
       
       - name: Lint
         run: npm run lint
 
   unit-test:
     name: Unit Tests
-    needs: lint
+    needs: [setup, lint]
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
-      PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
-      PUBLIC_OPENROUTER_API_KEY: ${{ secrets.PUBLIC_OPENROUTER_API_KEY }}
     
     steps:
       - name: Checkout repository
@@ -52,17 +83,11 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'npm'
       
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
-      
-      - name: Install TypeScript
-        run: npm install typescript@latest --no-save --legacy-peer-deps
-      
-      - name: Create .env.test file
-        run: |
-          echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" > .env.test
-          echo "PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env.test
-          echo "PUBLIC_OPENROUTER_API_KEY=${{ secrets.PUBLIC_OPENROUTER_API_KEY }}" >> .env.test
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ needs.setup.outputs.node-version }}-${{ hashFiles('**/package-lock.json') }}
       
       - name: Run unit tests
         run: npm run test
@@ -78,7 +103,7 @@ jobs:
 
   e2e-test:
     name: E2E Tests
-    needs: lint
+    needs: [setup, lint]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -100,20 +125,22 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'npm'
       
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
-      
-      - name: Install TypeScript
-        run: npm install typescript@latest --no-save --legacy-peer-deps
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ needs.setup.outputs.node-version }}-${{ hashFiles('**/package-lock.json') }}
       
       - name: Create .env.test file
         run: |
-          echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" > .env.test
-          echo "PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env.test
-          echo "PUBLIC_OPENROUTER_API_KEY=${{ secrets.PUBLIC_OPENROUTER_API_KEY }}" >> .env.test
-          echo "E2E_USERNAME=${{ secrets.E2E_USERNAME }}" >> .env.test
-          echo "E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.test
-          echo "E2E_WAIT_TIMEOUT=10000" >> .env.test
+          cat > .env.test << EOL
+          PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}
+          PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}
+          PUBLIC_OPENROUTER_API_KEY=${{ secrets.PUBLIC_OPENROUTER_API_KEY }}
+          E2E_USERNAME=${{ secrets.E2E_USERNAME }}
+          E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}
+          E2E_WAIT_TIMEOUT=10000
+          EOL
       
       - name: Build
         run: npm run build
@@ -123,9 +150,7 @@ jobs:
       
       - name: Run E2E tests
         run: |
-          # Uruchom serwer i testy
           npm run dev:e2e &
-          sleep 10
           npx wait-on --timeout 60000 http://localhost:3000
           PLAYWRIGHT_REUSE_SERVER=1 npm run test:e2e -- --workers=1
         timeout-minutes: 5
@@ -135,11 +160,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    needs: [unit-test, e2e-test]
-    env:
-      PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
-      PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
-      PUBLIC_OPENROUTER_API_KEY: ${{ secrets.PUBLIC_OPENROUTER_API_KEY }}
+    needs: [setup, unit-test, e2e-test]
     
     steps:
       - name: Checkout repository
@@ -158,13 +179,12 @@ jobs:
           path: dist
           key: ${{ runner.os }}-build-${{ github.sha }}
       
-      - name: Install dependencies
+      - name: Restore dependencies cache
         if: steps.restore-build.outputs.cache-hit != 'true'
-        run: npm ci --legacy-peer-deps
-      
-      - name: Install TypeScript
-        if: steps.restore-build.outputs.cache-hit != 'true'
-        run: npm install typescript@latest --no-save --legacy-peer-deps
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ needs.setup.outputs.node-version }}-${{ hashFiles('**/package-lock.json') }}
       
       - name: Build
         if: steps.restore-build.outputs.cache-hit != 'true'
