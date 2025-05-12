@@ -30,3 +30,5 @@ playwright-report/
 # root-level PNG files
 /*.png
 
+# playwright report
+playwright-report/
