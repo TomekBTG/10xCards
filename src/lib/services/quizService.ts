@@ -1,5 +1,6 @@
 import type { FlashcardDTO, FlashcardCategory, QuizSessionOptions, QuizFlashcardVM } from "../../types";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { categoryService } from "./categoryService";
 
 /**
  * Fetch all flashcards for the currently authenticated user
@@ -60,42 +61,48 @@ export async function getFilteredFlashcards(
  * @param {SupabaseClient} supabase - The Supabase client instance
  * @returns {Promise<FlashcardCategory[]>} - A promise that resolves to categories with counts
  */
-export async function getFlashcardCategories(supabase: SupabaseClient): Promise<FlashcardCategory[]> {
+export async function getFlashcardCategories(): Promise<FlashcardCategory[]> {
+  // Deleguj pobieranie kategorii do categoryService
+  return categoryService.getCategories();
+}
+
+/**
+ * Pobiera informacje o kategorii na podstawie ID
+ * @param categoryId - ID kategorii
+ * @returns Informacje o kategorii lub undefined jeśli nie znaleziono
+ */
+export async function getCategoryById(supabase: SupabaseClient, categoryId: string): Promise<FlashcardCategory | null> {
   try {
-    const { data, error } = await supabase.from("flashcards").select("category_id, category_name");
+    // Pobieramy kategorię z bazy danych
+    const { data, error } = await supabase.from("categories").select("id, name").eq("id", categoryId).single();
 
     if (error) {
-      throw error;
+      console.error("Błąd podczas pobierania kategorii:", error);
+      return null;
     }
 
-    // Group by category and count
-    const categoryMap = new Map<string, { id: string; name: string; count: number }>();
+    if (!data) {
+      return null;
+    }
 
-    data?.forEach((card) => {
-      if (card.category_id && card.category_name) {
-        if (categoryMap.has(card.category_id)) {
-          const category = categoryMap.get(card.category_id);
-          if (category) {
-            categoryMap.set(card.category_id, {
-              ...category,
-              count: category.count + 1,
-            });
-          }
-        } else {
-          categoryMap.set(card.category_id, {
-            id: card.category_id,
-            name: card.category_name,
-            count: 1,
-          });
-        }
-      }
-    });
+    // Pobieranie liczby fiszek w kategorii
+    const { count, error: countError } = await supabase
+      .from("flashcards")
+      .select("*", { count: "exact", head: true })
+      .eq("category_id", categoryId);
 
-    // Convert map to array
-    return Array.from(categoryMap.values());
+    if (countError) {
+      console.error("Błąd podczas liczenia fiszek:", countError);
+    }
+
+    return {
+      id: data.id,
+      name: data.name,
+      count: count || 0,
+    };
   } catch (error) {
-    console.error("Error fetching categories:", error);
-    return [];
+    console.error("Error fetching category by ID:", error);
+    return null;
   }
 }
 
