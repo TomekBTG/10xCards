@@ -22,12 +22,12 @@ export interface Database {
     Tables: {
       flashcard_generation_logs: {
         Row: {
-          generated_at: string;
-          generation_duration: number;
-          id: string;
-          number_generated: number;
-          user_id: string;
-          user_input: string;
+          generated_at: string; // ISO-8601 timestamp generacji
+          generation_duration: number; // Czas trwania generacji w sekundach
+          id: string; // UUID logu generacji
+          number_generated: number; // Liczba wygenerowanych fiszek
+          user_id: string; // UUID użytkownika, który wygenerował fiszki
+          user_input: string; // Tekst wprowadzony przez użytkownika do generacji
         };
         Insert: {
           generated_at?: string;
@@ -45,23 +45,30 @@ export interface Database {
           user_id?: string;
           user_input?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "flashcard_generation_logs_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       flashcards: {
         Row: {
-          back: string;
-          created_at: string;
-          flashcard_generation_logs_id: string | null;
-          front: string;
-          id: string;
-          is_ai_generated: boolean;
-          is_public: boolean;
-          status: string;
-          updated_at: string;
-          user_id: string;
-          category_id: string | null;
-          category_name: string | null;
-          difficulty: string | null;
+          back: string; // Treść tylnej strony fiszki
+          created_at: string; // ISO-8601 timestamp utworzenia
+          flashcard_generation_logs_id: string | null; // Referencja do logu generacji (opcjonalna)
+          front: string; // Treść przedniej strony fiszki
+          id: string; // UUID fiszki
+          is_ai_generated: boolean; // Czy fiszka została wygenerowana przez AI
+          is_public: boolean; // Czy fiszka jest publiczna
+          status: string; // Status fiszki: accepted, rejected, pending
+          updated_at: string; // ISO-8601 timestamp ostatniej aktualizacji
+          user_id: string; // UUID właściciela fiszki
+          category_id: string | null; // UUID kategorii (opcjonalne)
+          category_name: string | null; // Nazwa kategorii (opcjonalne) - do usunięcia po migracji
+          difficulty: string | null; // Poziom trudności: easy, medium, hard (opcjonalne)
         };
         Insert: {
           back: string;
@@ -93,11 +100,71 @@ export interface Database {
           category_name?: string | null;
           difficulty?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "flashcards_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "flashcards_category_id_fkey";
+            columns: ["category_id"];
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "flashcards_flashcard_generation_logs_id_fkey";
+            columns: ["flashcard_generation_logs_id"];
+            referencedRelation: "flashcard_generation_logs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      categories: {
+        Row: {
+          id: string;
+          name: string;
+          created_at: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          created_at?: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          created_at?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "categories_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: Record<never, never>;
-    Functions: Record<never, never>;
+    Functions: {
+      get_flashcard_count_by_category: {
+        Args: {
+          user_id_param: string;
+        };
+        Returns: {
+          category_id: string;
+          count: string;
+        }[];
+      };
+    };
     Enums: Record<never, never>;
     CompositeTypes: Record<never, never>;
   };

@@ -166,14 +166,33 @@ export const POST: APIRoute = async ({ request, locals }) => {
     console.log("Otrzymane dane fiszek:", JSON.stringify(flashcardsData));
 
     // Przygotuj fiszki do zapisania
-    const preparedFlashcards = flashcardsData.map((flashcard) => ({
-      ...flashcard,
-      user_id: user?.id || "anonymous",
-      status: "accepted", // domyślny status dla nowych fiszek
-    }));
+    const preparedFlashcards = flashcardsData.map((flashcard) => {
+      // Zachowujemy istniejące pola wraz z category_id i category_name
+      const preparedFlashcard = {
+        ...flashcard,
+        user_id: user?.id || "anonymous",
+        status: "accepted", // domyślny status dla nowych fiszek
+      };
+
+      // Upewnijmy się, że mamy odpowiednie dane kategorii
+      if (preparedFlashcard.category_id && !preparedFlashcard.category_name) {
+        console.log("Uwaga: Otrzymano fiszkę z category_id bez category_name:", preparedFlashcard.category_id);
+      }
+
+      return preparedFlashcard;
+    });
 
     // Logowanie przygotowanych fiszek
-    console.log("Przygotowane fiszki do zapisu:", JSON.stringify(preparedFlashcards));
+    console.log(
+      "Przygotowane fiszki do zapisu:",
+      JSON.stringify(
+        preparedFlashcards.map((f) => ({
+          front: f.front.substring(0, 20) + "...",
+          category_id: f.category_id,
+          category_name: f.category_name,
+        }))
+      )
+    );
 
     // Zapisz fiszki używając serwisu
     const savedFlashcards = await flashcardService.saveFlashcards(preparedFlashcards);

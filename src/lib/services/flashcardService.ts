@@ -7,7 +7,7 @@ import type {
   FlashcardsListResponseDTO,
 } from "../../types";
 import { supabaseClient } from "../../db/supabase.client";
-import { v4 as uuidv4 } from "uuid";
+import { categoryService } from "./categoryService";
 
 /**
  * Serwis do zarządzania fiszkami
@@ -59,50 +59,74 @@ export const flashcardService = {
         throw new Error("Nie znaleziono ID użytkownika. Proszę zalogować się ponownie.");
       }
 
-      // Przygotuj dane fiszek do zapisu
-      const flashcardsToInsert = flashcards.map((f) => {
-        const flashcardData = {
-          ...f,
-          user_id: userId,
-          status: "accepted", // Wszystkie zapisywane fiszki są akceptowane
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
+      // Przygotuj dane fiszek do zapisu z obsługą kategorii
+      const flashcardsWithProcessedCategories = await Promise.all(
+        flashcards.map(async (f) => {
+          // Podstawowe dane fiszki
+          const flashcardData = {
+            ...f,
+            user_id: userId,
+            status: "accepted", // Wszystkie zapisywane fiszki są akceptowane
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
 
-        // Upewnij się, że category_name jest używane tylko dla nowych kategorii
-        if (flashcardData.category_id) {
-          // Jeśli istnieje category_id, to nie używamy category_name
-          delete flashcardData.category_name;
-          console.log("Używanie istniejącej kategorii:", flashcardData.category_id);
-        } else if (flashcardData.category_name) {
-          // Jeśli nie ma category_id, ale jest category_name, to tworzymy nową kategorię
-          // Generujemy nowe ID dla kategorii, ponieważ baza danych wymaga niepustej wartości
-          const newCategoryId = uuidv4();
-          console.log("Tworzenie nowej kategorii:", flashcardData.category_name, "z ID:", newCategoryId);
-          flashcardData.category_id = newCategoryId;
-        } else {
-          // Jeśli nie ma ani category_id, ani category_name, to fiszka jest bez kategorii
-          // Ale category_id nie może być null, więc ustawiamy specjalną wartość
-          console.log("Fiszka bez kategorii");
-          flashcardData.category_id = "uncategorized";
-          delete flashcardData.category_name;
-        }
+          // Obsługa kategorii
+          if (flashcardData.category_id) {
+            // Jeśli podano ID kategorii, używamy go
+            console.log("Używanie istniejącej kategorii:", flashcardData.category_id);
+            // Usuwamy category_name, bo tabela flashcards nie ma już tego pola po migracji
+            delete flashcardData.category_name;
+          } else if (flashcardData.category_name) {
+            // Jeśli podano tylko nazwę kategorii, znajdź lub utwórz kategorię
+            console.log("Szukanie lub tworzenie kategorii:", flashcardData.category_name);
+            const category = await categoryService.getOrCreateCategory(flashcardData.category_name);
 
-        // Logowanie każdej fiszki przed zapisem
-        console.log("Fiszka do zapisania:", JSON.stringify(flashcardData));
+            if (category) {
+              console.log("Znaleziono/utworzono kategorię:", category.name, "z ID:", category.id);
+              flashcardData.category_id = category.id;
+              // Usuwamy category_name, bo tabela flashcards nie ma już tego pola po migracji
+              delete flashcardData.category_name;
+            } else {
+              console.error("Nie udało się utworzyć kategorii:", flashcardData.category_name);
+              // Używamy domyślnej kategorii, jeśli nie udało się utworzyć
+              const defaultCategory = await categoryService.getOrCreateCategory("Domyślna kategoria");
+              flashcardData.category_id = defaultCategory?.id || "uncategorized";
+              delete flashcardData.category_name;
+            }
+          } else {
+            // Jeśli nie podano ani ID ani nazwy kategorii, użyj domyślnej
+            console.log("Brak danych kategorii - używam domyślnej kategorii");
+            const defaultCategory = await categoryService.getOrCreateCategory("Domyślna kategoria");
+            flashcardData.category_id = defaultCategory?.id || "uncategorized";
+            delete flashcardData.category_name;
+          }
 
-        return flashcardData;
-      });
+          return flashcardData;
+        })
+      );
+
+      // Logowanie przetworzonych fiszek
+      console.log(
+        "Fiszki po przetworzeniu kategorii:",
+        flashcardsWithProcessedCategories.map((f) => ({
+          front: f.front?.substring(0, 20) + "...",
+          category_id: f.category_id,
+        }))
+      );
 
       // Zapisz fiszki w bazie danych przy użyciu Supabase
-      const { data, error } = await supabaseClient.from("flashcards").insert(flashcardsToInsert).select("*");
+      const { data, error } = await supabaseClient
+        .from("flashcards")
+        .insert(flashcardsWithProcessedCategories)
+        .select("*");
 
       if (error) {
         console.error("Błąd Supabase podczas zapisywania fiszek:", error);
         throw new Error(`Błąd podczas zapisywania fiszek: ${error.message}`);
       }
 
-      console.log("Zapisane fiszki z Supabase:", JSON.stringify(data));
+      console.log("Zapisano pomyślnie", data?.length || 0, "fiszek");
       return data || [];
     } catch (error) {
       console.error("Error saving flashcards:", error);
@@ -150,6 +174,18 @@ export const flashcardService = {
    */
   async updateFlashcard(id: string, command: UpdateFlashcardCommand): Promise<FlashcardDTO> {
     try {
+      // Jeśli aktualizujemy kategorię po nazwie, najpierw przetwórzmy to na ID
+      if (command.category_name && !command.category_id) {
+        const category = await categoryService.getOrCreateCategory(command.category_name);
+        if (category) {
+          command.category_id = category.id;
+          delete command.category_name; // Usuwamy category_name, bo tabela nie ma już tego pola
+        }
+      } else if (command.category_name) {
+        // Jeśli podano zarówno ID jak i nazwę, priorytet ma ID
+        delete command.category_name;
+      }
+
       const response = await fetch(`/api/flashcards/${id}`, {
         method: "PUT",
         headers: {
@@ -253,59 +289,10 @@ export const flashcardService = {
   },
 
   /**
-   * Gets all available flashcard categories with counts
-   * @returns Promise resolving to categories with counts
+   * Pobiera kategorie fiszek
+   * @returns Lista kategorii z liczbą fiszek
    */
   async getCategories(): Promise<FlashcardCategory[]> {
-    try {
-      const { data, error } = await supabaseClient.from("flashcards").select("category_id, category_name");
-
-      if (error) {
-        throw error;
-      }
-
-      // Group by category and count
-      const categoryMap = new Map<string, { id: string; name: string; count: number }>();
-
-      // Najpierw dodajmy kategorię dla fiszek bez kategorii
-      let uncategorizedCount = 0;
-
-      data?.forEach((card) => {
-        if (!card.category_id || !card.category_name) {
-          uncategorizedCount++;
-        } else if (card.category_id && card.category_name) {
-          if (categoryMap.has(card.category_id)) {
-            const category = categoryMap.get(card.category_id);
-            if (category) {
-              categoryMap.set(card.category_id, {
-                ...category,
-                count: category.count + 1,
-              });
-            }
-          } else {
-            categoryMap.set(card.category_id, {
-              id: card.category_id,
-              name: card.category_name,
-              count: 1,
-            });
-          }
-        }
-      });
-
-      // Jeśli mamy fiszki bez kategorii, dodajmy specjalną kategorię
-      if (uncategorizedCount > 0) {
-        categoryMap.set("uncategorized", {
-          id: "uncategorized",
-          name: "Bez kategorii",
-          count: uncategorizedCount,
-        });
-      }
-
-      // Convert map to array
-      return Array.from(categoryMap.values());
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      return [];
-    }
+    return categoryService.getCategories();
   },
 };

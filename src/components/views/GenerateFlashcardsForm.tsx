@@ -71,20 +71,23 @@ export function GenerateFlashcardsForm({
   // Prepare category data for API
   const getCategoryData = () => {
     if (isAddingCategory && newCategoryName.trim()) {
-      const categoryId = `new-${Date.now()}`;
+      // Dla nowej kategorii generujemy tymczasowe ID i przekazujemy nazwę
       return {
-        category_id: categoryId,
+        category_id: undefined, // Usuwamy tymczasowe ID - zostanie wygenerowane w serwisie
         category_name: newCategoryName.trim(),
       };
     } else if (selectedCategoryId) {
+      // Dla istniejącej kategorii przekazujemy zarówno ID jak i nazwę
       const selectedCategory = categories.find((cat) => cat.id === selectedCategoryId);
       if (selectedCategory) {
+        console.log("Wybrana kategoria:", selectedCategory.name, "ID:", selectedCategory.id);
         return {
           category_id: selectedCategory.id,
-          category_name: selectedCategory.name,
+          category_name: selectedCategory.name, // Zawsze przekazujemy także nazwę
         };
       }
     }
+    // Domyślnie zwracamy nieokreślone wartości
     return {
       category_id: undefined,
       category_name: undefined,

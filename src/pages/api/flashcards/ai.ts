@@ -8,6 +8,7 @@ import type {
 } from "../../../types";
 import { aiService } from "../../../lib/services/ai.service";
 import { supabaseClient } from "../../../db/supabase.client";
+import { categoryService } from "../../../lib/services/categoryService";
 
 export const prerender = false;
 
@@ -56,8 +57,33 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
     const userId = data.session.user.id;
     const { user_input, category_id, category_name } = validationResult.data as GenerateFlashcardsCommand;
 
+    // Obsługa kategorii - uzyskaj właściwe category_id
+    let finalCategoryId: string;
+    if (category_id) {
+      // Używamy istniejącej kategorii
+      finalCategoryId = category_id;
+      console.log("Używamy istniejącej kategorii z ID:", category_id);
+    } else if (category_name) {
+      // Tworzymy lub pobieramy kategorię o podanej nazwie
+      console.log("Szukamy lub tworzymy kategorię o nazwie:", category_name);
+      const category = await categoryService.getOrCreateCategory(category_name);
+      if (!category) {
+        return new Response(JSON.stringify({ error: "Nie udało się utworzyć kategorii" }), { status: 500 });
+      }
+      finalCategoryId = category.id;
+      console.log("Znaleziono/utworzono kategorię:", category.name, "z ID:", category.id);
+    } else {
+      // Jeśli nie ma kategorii, użyj domyślnej
+      console.log("Brak kategorii - używamy domyślnej");
+      const defaultCategory = await categoryService.getOrCreateCategory("Domyślna kategoria");
+      if (!defaultCategory) {
+        return new Response(JSON.stringify({ error: "Nie udało się utworzyć domyślnej kategorii" }), { status: 500 });
+      }
+      finalCategoryId = defaultCategory.id;
+    }
+
     // 2. Wygeneruj fiszki przy użyciu serwisu AI
-    const generatedFlashcards = await aiService.generateFlashcards(user_input, category_id, category_name);
+    const generatedFlashcards = await aiService.generateFlashcards(user_input, finalCategoryId, category_name);
 
     // 3. Utwórz log generacji
     const generationLog = {
@@ -92,9 +118,16 @@ export async function POST({ request, locals }: APIContext): Promise<Response> {
       flashcard_generation_logs_id: insertedLog.id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      category_id: category_id || null,
-      category_name: category_name || null,
+      category_id: finalCategoryId,
     }));
+
+    // Logowanie danych dla debugowania
+    console.log("Kategoria użyta do zapisu fiszek:", {
+      category_id: finalCategoryId,
+      original_category_id: category_id,
+      original_category_name: category_name,
+    });
+    console.log("Przykładowa fiszka do zapisu:", flashcardsToInsert[0]);
 
     // 5. Zapisz fiszki w bazie danych
     const { data: insertedFlashcards, error: flashcardsError } = await supabaseClient

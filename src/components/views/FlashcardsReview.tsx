@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import type { FlashcardDTO, FlashcardGenerationLogDTO, CreateFlashcardCommand } from "../../types";
+import type { FlashcardDTO, FlashcardGenerationLogDTO } from "../../types";
 import { FlashcardCard } from "@/components/views/FlashcardCard";
 import { Button } from "../ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "../ui/card";
@@ -135,27 +135,35 @@ export function FlashcardsReview({ flashcards, generationLog, onReset }: Flashca
     }
 
     // Informacja o rozpoczęciu zapisywania
-    const saveToastId = toast.loading(`Zapisywanie ${acceptedCards.length} fiszek...`);
+    const saveToastId = toast.loading(`Aktualizowanie ${acceptedCards.length} fiszek...`);
 
     try {
       setIsSaving(true);
       setSaveError(null);
       setSaveSuccess(false);
 
-      // Przekształcenie fiszek do formatu wymaganego przez API
-      const flashcardsToSave: CreateFlashcardCommand[] = acceptedCards.map((card) => ({
-        front: card.front,
-        back: card.back,
-        is_ai_generated: true,
-        category_id: card.category_id,
-        category_name: card.category_name,
-        difficulty: card.difficulty,
-      }));
+      // Przekształcenie fiszek do formatu wymaganego przez API i aktualizacja statusu
+      for (const card of acceptedCards) {
+        // Sprawdzamy, czy difficulty jest zgodne z wymaganym typem
+        let typedDifficulty: "easy" | "medium" | "hard" | null = null;
+        if (card.difficulty === "easy" || card.difficulty === "medium" || card.difficulty === "hard") {
+          typedDifficulty = card.difficulty;
+        }
 
-      // Wywołanie API do zapisania fiszek
-      await flashcardService.saveFlashcards(flashcardsToSave);
+        const updateData = {
+          front: card.front,
+          back: card.back,
+          status: "accepted" as const,
+          category_id: card.category_id || undefined,
+          category_name: card.category_name || undefined,
+          difficulty: typedDifficulty,
+        };
 
-      // Aktualizacja statusu zapisanych fiszek
+        // Aktualizujemy istniejącą fiszkę zamiast tworzyć nową
+        await flashcardService.updateFlashcard(card.id, updateData);
+      }
+
+      // Aktualizacja statusu zapisanych fiszek w UI
       setCards((currentCards) =>
         currentCards.map((card) => (card.status === "accepted" && !card.is_saved ? { ...card, is_saved: true } : card))
       );
@@ -163,16 +171,16 @@ export function FlashcardsReview({ flashcards, generationLog, onReset }: Flashca
       setSaveSuccess(true);
 
       // Aktualizacja powiadomienia toast po udanym zapisie
-      toast.success(`Zapisano ${acceptedCards.length} fiszek`, {
+      toast.success(`Zaktualizowano ${acceptedCards.length} fiszek`, {
         id: saveToastId,
-        description: "Wszystkie zaakceptowane fiszki zostały pomyślnie zapisane w bazie danych.",
+        description: "Wszystkie zaakceptowane fiszki zostały pomyślnie zaktualizowane w bazie danych.",
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Wystąpił błąd podczas zapisywania fiszek";
+      const errorMessage = error instanceof Error ? error.message : "Wystąpił błąd podczas aktualizowania fiszek";
       setSaveError(errorMessage);
 
       // Aktualizacja powiadomienia toast w przypadku błędu
-      toast.error("Błąd zapisywania", {
+      toast.error("Błąd aktualizacji", {
         id: saveToastId,
         description: errorMessage,
       });
@@ -240,7 +248,7 @@ export function FlashcardsReview({ flashcards, generationLog, onReset }: Flashca
 
           {saveSuccess && (
             <div className="mb-6 p-4 bg-green-100 dark:bg-green-900/20 border border-green-300 dark:border-green-800 rounded-md text-green-700 dark:text-green-400">
-              Fiszki zostały pomyślnie zapisane!
+              Fiszki zostały pomyślnie zaktualizowane!
             </div>
           )}
 
@@ -344,10 +352,10 @@ export function FlashcardsReview({ flashcards, generationLog, onReset }: Flashca
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                Zapisywanie...
+                Aktualizowanie...
               </>
             ) : (
-              `Zapisz zaakceptowane (${unsavedAcceptedCount})`
+              `Zaktualizuj zaakceptowane (${unsavedAcceptedCount})`
             )}
           </Button>
         </CardFooter>
