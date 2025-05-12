@@ -80,11 +80,16 @@ test.describe("Testy elementów UI związanych z fiszkami", () => {
       // Kliknij pierwszy link do biblioteki
       const firstLibraryLink = libraryLinks.first();
       try {
-        await firstLibraryLink.click();
+        await firstLibraryLink.scrollIntoViewIfNeeded();
+        await firstLibraryLink.click({ force: true });
         await page.waitForTimeout(2000); // Daj stronie czas na załadowanie
 
         console.log("URL po kliknięciu linku biblioteki:", page.url());
         await page.screenshot({ path: "library-page-attempt.png" });
+
+        // Jeśli menu jest zwinięte na mobilnym widoku
+        const menuButton = page.locator('button:has-text("Menu")');
+        if (await menuButton.isVisible()) await menuButton.click();
 
         // Szukanie przycisku/linku do dodawania fiszek
         const addFlashcardButton = page
