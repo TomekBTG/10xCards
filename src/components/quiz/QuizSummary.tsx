@@ -2,13 +2,16 @@ import React from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "../ui/card";
 import type { QuizStatsVM } from "../../types";
+import { Spinner } from "@/components/ui/spinner";
 
 interface QuizSummaryProps {
   stats: QuizStatsVM;
   onRestart: () => void;
+  isSavingResults?: boolean;
+  saveError?: string | null;
 }
 
-const QuizSummary: React.FC<QuizSummaryProps> = ({ stats, onRestart }) => {
+const QuizSummary: React.FC<QuizSummaryProps> = ({ stats, onRestart, isSavingResults = false, saveError = null }) => {
   // Format seconds to mm:ss
   const formatTime = (totalSeconds: number): string => {
     const minutes = Math.floor(totalSeconds / 60);
@@ -30,6 +33,28 @@ const QuizSummary: React.FC<QuizSummaryProps> = ({ stats, onRestart }) => {
       </CardHeader>
 
       <CardContent className="space-y-8 p-6">
+        {/* Status zapisywania */}
+        {(isSavingResults || saveError) && (
+          <div
+            className={`p-3 rounded-md ${saveError ? "bg-red-100 dark:bg-red-900/30" : "bg-blue-100 dark:bg-blue-900/30"} flex items-center gap-2`}
+          >
+            {isSavingResults && (
+              <>
+                <Spinner size="sm" className="text-blue-600 dark:text-blue-400" />
+                <span className="text-sm text-blue-700 dark:text-blue-300">Zapisywanie wyników...</span>
+              </>
+            )}
+            {saveError && !isSavingResults && (
+              <span className="text-sm text-red-700 dark:text-red-300">
+                Błąd podczas zapisywania wyników: {saveError}
+              </span>
+            )}
+            {!isSavingResults && !saveError && (
+              <span className="text-sm text-green-700 dark:text-green-300">Wyniki zostały zapisane!</span>
+            )}
+          </div>
+        )}
+
         {/* Podstawowe statystyki */}
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
           <div className="bg-gray-100 dark:bg-zinc-800 p-4 rounded-lg text-center">

@@ -209,6 +209,7 @@ interface UseQuizManagerReturn {
   currentCard: QuizFlashcardVM | undefined;
   seconds: number;
   loadFlashcards: (sessionOptions: QuizSessionOptions) => Promise<void>;
+  saveQuizResults: () => Promise<void>;
   categories: FlashcardCategory[];
   startTimer: () => void;
 }
@@ -230,7 +231,7 @@ export function useQuizManager(): UseQuizManagerReturn {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const categoryData = await getFlashcardCategories(supabaseClient);
+        const categoryData = await getFlashcardCategories();
         setCategories(categoryData);
         dispatch({ type: "SET_CATEGORIES", payload: categoryData });
       } catch (error) {
@@ -254,7 +255,6 @@ export function useQuizManager(): UseQuizManagerReturn {
     if (state.isFinished && timerStarted) {
       stop();
       setTimerStarted(false);
-      console.log("Timer stopped due to quiz finish");
     }
 
     // Cleanup on unmount
@@ -339,15 +339,58 @@ export function useQuizManager(): UseQuizManagerReturn {
 
   // Funkcja do rozpoczęcia timera
   const startTimer = useCallback(() => {
-    // Zawsze resetujemy timer i uruchamiamy od nowa
+    // Resetujemy timer i uruchamiamy od nowa
     resetTimer();
-    // Dodajemy małe opóźnienie przed uruchomieniem timera
-    setTimeout(() => {
-      startTimerInternal();
-      setTimerStarted(true);
-      console.log("Timer started in useQuizManager with timeout");
-    }, 10);
-  }, [startTimerInternal, resetTimer]);
+
+    // Uruchamiamy timer i ustawiamy flagę
+    startTimerInternal();
+    setTimerStarted(true);
+
+    // Wymuszamy ponowne renderowanie komponentu po uruchomieniu timera
+    dispatch({ type: "SET_SESSION_OPTIONS", payload: state.sessionOptions });
+  }, [startTimerInternal, resetTimer, state.sessionOptions, dispatch]);
+
+  // Funkcja zapisująca wyniki quizu do bazy danych
+  const saveQuizResults = useCallback(async () => {
+    try {
+      // Pobierz aktualnego użytkownika
+      const { data: userData } = await supabaseClient.auth.getUser();
+
+      if (!userData?.user?.id) {
+        throw new Error("Użytkownik nie jest zalogowany");
+      }
+
+      // Oblicz aktualne statystyki bezpośrednio przed zapisem
+      const currentStats = calculateStats(state.cards, seconds);
+
+      // Utwórz rekord do zapisania w bazie
+      const quizResult = {
+        user_id: userData.user.id,
+        category_id: state.sessionOptions.categoryId,
+        difficulty: state.sessionOptions.difficulty,
+        limit_count: state.sessionOptions.limit || 10, // Domyślna wartość 10, jeśli limit jest undefined
+        total_cards: currentStats.total,
+        correct_count: currentStats.correctCount,
+        incorrect_count: currentStats.incorrectCount,
+        percent_correct: currentStats.percentCorrect,
+        duration_seconds: currentStats.durationSeconds,
+        category_stats: currentStats.categories || {}, // Pusta mapa, jeśli categories jest undefined
+      };
+
+      console.log("Zapisuję wyniki quizu:", quizResult);
+
+      // Zapisz wyniki do bazy danych
+      const { error } = await supabaseClient.from("quiz_results").insert(quizResult);
+
+      if (error) {
+        console.error("Błąd podczas zapisywania wyników quizu:", error);
+        throw new Error(`Nie udało się zapisać wyników: ${error.message}`);
+      }
+    } catch (error) {
+      console.error("Nieoczekiwany błąd podczas zapisywania wyników:", error);
+      throw new Error("Wystąpił błąd podczas zapisywania wyników quizu");
+    }
+  }, [state.cards, state.sessionOptions, seconds]);
 
   // Current card being displayed
   const currentCard = state.cards[state.currentIndex];
@@ -367,6 +410,7 @@ export function useQuizManager(): UseQuizManagerReturn {
     currentCard,
     seconds,
     loadFlashcards,
+    saveQuizResults,
     categories,
     startTimer,
   };

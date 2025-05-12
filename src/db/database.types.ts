@@ -54,6 +54,58 @@ export interface Database {
           },
         ];
       };
+      quiz_results: {
+        Row: {
+          id: string; // UUID wyniku quizu
+          user_id: string; // UUID użytkownika
+          created_at: string; // ISO-8601 timestamp utworzenia
+          category_id: string | null; // ID kategorii (opcjonalne)
+          difficulty: string | null; // Poziom trudności: easy, medium, hard (opcjonalne)
+          limit_count: number; // Limit kart w quizie
+          total_cards: number; // Całkowita liczba kart
+          correct_count: number; // Liczba poprawnych odpowiedzi
+          incorrect_count: number; // Liczba niepoprawnych odpowiedzi
+          percent_correct: number; // Procent poprawnych odpowiedzi
+          duration_seconds: number; // Czas trwania quizu w sekundach
+          category_stats: Json; // Statystyki dla każdej kategorii (JSON)
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          created_at?: string;
+          category_id?: string | null;
+          difficulty?: string | null;
+          limit_count: number;
+          total_cards: number;
+          correct_count: number;
+          incorrect_count: number;
+          percent_correct: number;
+          duration_seconds: number;
+          category_stats: Json;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          created_at?: string;
+          category_id?: string | null;
+          difficulty?: string | null;
+          limit_count?: number;
+          total_cards?: number;
+          correct_count?: number;
+          incorrect_count?: number;
+          percent_correct?: number;
+          duration_seconds?: number;
+          category_stats?: Json;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "quiz_results_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       flashcards: {
         Row: {
           back: string; // Treść tylnej strony fiszki

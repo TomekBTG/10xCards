@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useQuizManager } from "../../lib/hooks/useQuizManager";
 import QuizCard from "./QuizCard";
 import QuizNavigation from "./QuizNavigation";
@@ -17,6 +17,10 @@ const defaultSessionOptions: QuizSessionOptions = {
 export default function QuizApp() {
   const [sessionOptions, setSessionOptions] = useState<QuizSessionOptions>(defaultSessionOptions);
   const [quizStarted, setQuizStarted] = useState<boolean>(false);
+  const [isSavingResults, setIsSavingResults] = useState<boolean>(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [resultsSaved, setResultsSaved] = useState<boolean>(false);
+  const saveAttemptedRef = useRef<boolean>(false);
 
   const {
     state,
@@ -29,6 +33,7 @@ export default function QuizApp() {
     loadFlashcards,
     categories,
     startTimer,
+    saveQuizResults,
   } = useQuizManager();
 
   // Obsługa zmiany parametrów sesji
@@ -41,13 +46,12 @@ export default function QuizApp() {
     try {
       // Najpierw ładujemy karty
       await loadFlashcards(sessionOptions);
+
       // Ustawiamy flagę, że quiz został rozpoczęty
       setQuizStarted(true);
-      // Uruchamiamy timer z małym opóźnieniem, aby DOM zdążył się zaktualizować
-      setTimeout(() => {
-        startTimer();
-        console.log("Timer started manually");
-      }, 100);
+
+      // Uruchamiamy timer po ustawieniu flagi
+      startTimer();
     } catch (error) {
       console.error("Error starting quiz:", error);
     }
@@ -57,6 +61,9 @@ export default function QuizApp() {
   const handleRestart = useCallback(() => {
     restartQuiz();
     setQuizStarted(false);
+    setResultsSaved(false);
+    setSaveError(null);
+    saveAttemptedRef.current = false;
   }, [restartQuiz]);
 
   // Automatyczne przejście do następnej karty po oznaczeniu
@@ -71,6 +78,32 @@ export default function QuizApp() {
 
   // Memoizowane kategorie dla komponentu konfiguracji
   const memoizedCategories = useMemo(() => categories, [categories]);
+
+  // Zapisz wyniki po zakończeniu quizu - tylko raz
+  useEffect(() => {
+    const saveResults = async () => {
+      if (state.isFinished && quizStarted && !isSavingResults && !resultsSaved && !saveAttemptedRef.current) {
+        try {
+          saveAttemptedRef.current = true; // Oznaczamy, że próbowaliśmy zapisać
+          setIsSavingResults(true);
+          setSaveError(null);
+
+          // Zapisujemy wyniki z aktualnymi statystykami
+          await saveQuizResults();
+          setResultsSaved(true); // Oznaczamy, że wyniki zostały zapisane
+
+          console.log("Wyniki quizu zostały zapisane pomyślnie");
+        } catch (error) {
+          console.error("Błąd podczas zapisywania wyników:", error);
+          setSaveError(error instanceof Error ? error.message : "Nieznany błąd podczas zapisywania wyników");
+        } finally {
+          setIsSavingResults(false);
+        }
+      }
+    };
+
+    saveResults();
+  }, [state.isFinished, quizStarted, saveQuizResults]);
 
   // Stan błędu
   if (state.error) {
@@ -114,7 +147,14 @@ export default function QuizApp() {
 
   // Quiz zakończony - wyświetl podsumowanie
   if (state.isFinished && quizStarted) {
-    return <QuizSummary stats={state.stats} onRestart={handleRestart} />;
+    return (
+      <QuizSummary
+        stats={state.stats}
+        onRestart={handleRestart}
+        isSavingResults={isSavingResults}
+        saveError={saveError}
+      />
+    );
   }
 
   // Etap 1: Konfiguracja quizu

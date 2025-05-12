@@ -1,4 +1,4 @@
-- Nie działa licznik czasu
+OK - Nie działa licznik czasu
 OK - Generowanie fiszek nie zapisuje poprawnie category_name. Wszystkie fiszki mają category_id, ale czesc nie ma category_name
-- Nie ma zapisywania wyników Quizu
+OK - Nie ma zapisywania wyników Quizu
 - Poprawa dashboardu
