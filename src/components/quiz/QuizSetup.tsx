@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Label } from "../ui/label";
+import { QuizResultsTable } from "../QuizResultsTable";
 import type { FlashcardCategory, QuizSessionOptions } from "../../types";
 
 interface QuizSetupProps {
@@ -145,7 +146,7 @@ export default function QuizSetup({ categories, filterOptions, onFilterChange, o
   };
 
   return (
-    <div>
+    <div className="space-y-8">
       <p className="text-muted-foreground mb-6">Skonfiguruj parametry sesji, a następnie rozpocznij naukę z fiszkami</p>
 
       <Card className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg overflow-hidden">
@@ -175,6 +176,9 @@ export default function QuizSetup({ categories, filterOptions, onFilterChange, o
           </Button>
         </CardFooter>
       </Card>
+
+      {/* Tabela z historią wyników */}
+      <QuizResultsTable limit={5} />
     </div>
   );
 }

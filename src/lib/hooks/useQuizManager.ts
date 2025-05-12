@@ -16,6 +16,7 @@ import {
   getFlashcardCategories,
   shuffleArray,
 } from "../services/quizService";
+import { quizResultsService } from "../services/quizResultsService";
 import type { PostgrestError } from "@supabase/supabase-js";
 
 // Initial quiz state
@@ -363,29 +364,15 @@ export function useQuizManager(): UseQuizManagerReturn {
       // Oblicz aktualne statystyki bezpośrednio przed zapisem
       const currentStats = calculateStats(state.cards, seconds);
 
-      // Utwórz rekord do zapisania w bazie
-      const quizResult = {
-        user_id: userData.user.id,
-        category_id: state.sessionOptions.categoryId,
-        difficulty: state.sessionOptions.difficulty,
-        limit_count: state.sessionOptions.limit || 10, // Domyślna wartość 10, jeśli limit jest undefined
-        total_cards: currentStats.total,
-        correct_count: currentStats.correctCount,
-        incorrect_count: currentStats.incorrectCount,
-        percent_correct: currentStats.percentCorrect,
-        duration_seconds: currentStats.durationSeconds,
-        category_stats: currentStats.categories || {}, // Pusta mapa, jeśli categories jest undefined
+      // Przygotuj opcje sesji zgodne z oczekiwanym typem
+      const sessionOptions = {
+        categoryId: state.sessionOptions.categoryId || null,
+        difficulty: state.sessionOptions.difficulty || null,
+        limit: state.sessionOptions.limit || 10,
       };
 
-      console.log("Zapisuję wyniki quizu:", quizResult);
-
-      // Zapisz wyniki do bazy danych
-      const { error } = await supabaseClient.from("quiz_results").insert(quizResult);
-
-      if (error) {
-        console.error("Błąd podczas zapisywania wyników quizu:", error);
-        throw new Error(`Nie udało się zapisać wyników: ${error.message}`);
-      }
+      // Użyj serwisu do zapisania wyników
+      await quizResultsService.saveQuizResults(supabaseClient, userData.user.id, currentStats, sessionOptions);
     } catch (error) {
       console.error("Nieoczekiwany błąd podczas zapisywania wyników:", error);
       throw new Error("Wystąpił błąd podczas zapisywania wyników quizu");

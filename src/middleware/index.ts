@@ -3,7 +3,7 @@ import { supabaseClient } from "@/db/supabase.client";
 
 // Lista ścieżek wymagających autoryzacji
 // Tymczasowo usunąłem "/dashboard" z listy chronionych ścieżek
-const PROTECTED_ROUTES = ["/flashcards", "/profile", "/settings", "/dashboard", "/generate", "/library"];
+const PROTECTED_ROUTES = ["/flashcards", "/profile", "/settings", "/dashboard", "/generate", "/library", "/quiz"];
 
 // Lista ścieżek dostępnych tylko dla niezalogowanych użytkowników
 const GUEST_ONLY_ROUTES = ["/login", "/register", "/reset-password"];

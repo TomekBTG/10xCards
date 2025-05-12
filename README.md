@@ -71,33 +71,6 @@ The application is hosted on **Cloudflare Pages**. This decision was based on th
 - **Astro Support**: Good support for Astro, including server-side rendering (SSR) capabilities via Cloudflare Workers, which aligns with the project's tech stack.
 - **Ease of Use**: Simplified deployment process integrated with GitHub.
 
-## Project Structure
-
-```md
-.
-├── src/
-│   ├── layouts/          # Astro layouts
-│   ├── pages/            # Astro pages
-│   │   └── api/          # API endpoints
-│   ├── middleware/       # Astro middleware
-│   ├── db/               # Supabase clients and types
-│   ├── types.ts          # Shared types for backend and frontend
-│   ├── types/            # Additional type definitions
-│   ├── components/       # Client-side components
-│   │   ├── ui/           # Shadcn/ui components
-│   │   ├── auth/         # Authentication components
-│   │   ├── dashboard/    # Dashboard components
-│   │   ├── flashcards/   # Flashcard components
-│   │   ├── library/      # Library-related components
-│   │   ├── quiz/         # Quiz components
-│   │   ├── user/         # User profile components
-│   │   └── views/        # View components
-│   ├── hooks/            # Custom React hooks
-│   ├── lib/              # Services and helpers
-│   └── styles/           # Global styles
-├── public/               # Public assets
-```
-
 ## License
 
 This project is licensed under the [MIT License](LICENSE). 

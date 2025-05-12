@@ -265,12 +265,17 @@ export function useRegister() {
         throw new Error(error.message);
       }
 
+      // Wylogowanie użytkownika po rejestracji
+      await supabaseClient.auth.signOut();
+
+      // Usuwamy stary token sesji, jeśli istnieje
+      const AUTH_COOKIE_NAME = "sb-auth-token";
+      document.cookie = `${AUTH_COOKIE_NAME}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+
       showToast("success", "Zarejestrowano pomyślnie. Sprawdź swoją skrzynkę email, aby potwierdzić rejestrację.");
 
-      // Redirect to login or email confirmation page
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 3000);
+      // Przekierowanie na stronę logowania natychmiast, bez czekania
+      window.location.href = "/login";
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Wystąpił błąd podczas rejestracji";
 
